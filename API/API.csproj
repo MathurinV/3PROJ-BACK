@@ -16,12 +16,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="..\.dockerignore">
-        <Link>.dockerignore</Link>
-      </Content>
-    </ItemGroup>
-
-    <ItemGroup>
       <None Remove="Properties\launchSettings.json" />
     </ItemGroup>
 
@@ -31,6 +25,12 @@
 
     <ItemGroup>
       <ProjectReference Include="..\DAL\DAL.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
     </ItemGroup>
 
 </Project>
