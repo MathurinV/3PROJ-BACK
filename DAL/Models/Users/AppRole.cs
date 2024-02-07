@@ -4,5 +4,4 @@ namespace DAL.Models.Users;
 
 public class AppRole : IdentityRole<Guid>
 {
-    
 }

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API;
 
-public class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, Guid>
+public sealed class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, Guid>
 {
     public MoneyMinderDbContext(DbContextOptions<MoneyMinderDbContext> options) : base(options)
     {
@@ -39,7 +39,7 @@ public class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, Guid>
 
         builder.Entity<UserGroup>()
             .HasKey(ug => new { ug.UserId, ug.GroupId });
-        
+
         builder.Entity<UserGroup>()
             .Property(ug => ug.JoinedAt)
             .HasDefaultValueSql("NOW()");
@@ -48,12 +48,12 @@ public class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, Guid>
             .HasOne(ug => ug.User)
             .WithMany(u => u.UserGroups)
             .HasForeignKey(ug => ug.UserId);
-        
+
         builder.Entity<UserGroup>()
             .HasOne(ug => ug.Group)
             .WithMany(g => g.UserGroups)
             .HasForeignKey(ug => ug.GroupId);
-        
+
         builder.Entity<Group>()
             .HasOne(g => g.Owner)
             .WithMany(u => u.OwnedGroups)

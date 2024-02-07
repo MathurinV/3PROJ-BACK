@@ -17,7 +17,7 @@ public class GroupMutations
         var userGroup = new UserGroupInsertDto
         {
             UserId = currentGroup.OwnerId,
-            GroupId = currentGroup.Id,
+            GroupId = currentGroup.Id
         };
         await userGroupRepository.InsertAsync(userGroup);
         return await groupRepository.GetByIdAsync(currentGroup.Id);

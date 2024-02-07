@@ -12,9 +12,9 @@ public class UserRepository(
     SignInManager<AppUser> signInManager) : IUserRepository
 {
     private readonly MoneyMinderDbContext _context = context;
-    private readonly UserManager<AppUser> _userManager = userManager;
     private readonly RoleManager<AppRole> _roleManager = roleManager;
     private readonly SignInManager<AppUser> _signInManager = signInManager;
+    private readonly UserManager<AppUser> _userManager = userManager;
 
     public async Task<ICollection<AppUser>> GetAllAsync()
     {
