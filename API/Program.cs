@@ -1,6 +1,7 @@
 using API.Mutations;
 using API.Queries;
 using API.Repositories;
+using API.Types;
 using DAL.Models.Users;
 using DAL.Repositories;
 using Microsoft.AspNetCore.Identity;
@@ -27,12 +28,17 @@ public class Program
 
         // GraphQL
         builder.Services.AddGraphQLServer()
+            // Add db context
             .AddQueryType(d => d.Name("Query"))
             .AddTypeExtension<UserQueries>()
             .AddTypeExtension<GroupQueries>()
+            
             .AddMutationType(d => d.Name("Mutation"))
             .AddTypeExtension<UserMutations>()
             .AddTypeExtension<GroupMutations>()
+            .AddTypeExtension<MessageMutations>()
+            
+            .AddType<AppUserType>()
             ;
 
         // Dependency Injection
@@ -40,6 +46,8 @@ public class Program
             .AddScoped<IUserRepository, UserRepository>()
             .AddScoped<IGroupRepository, GroupRepository>()
             .AddScoped<IUserGroupRepository, UserGroupRepository>()
+            .AddScoped<IMessageRepository, MessageRepository>()
+            .AddScoped<IGroupMessageRepository, GroupMessageRepository>()
             ;
 
         // Add services to the container.

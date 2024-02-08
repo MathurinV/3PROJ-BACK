@@ -1,4 +1,5 @@
 using DAL.Models.Groups;
+using DAL.Models.Messages;
 using DAL.Models.UserGroups;
 using DAL.Models.Users;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -30,7 +31,8 @@ public sealed class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, G
 
     public DbSet<Group> Groups { get; set; } = null!;
     public DbSet<UserGroup> UserGroups { get; set; } = null!;
-
+    public DbSet<Message> Messages { get; set; } = null!;
+    public DbSet<GroupMessage> GroupMessages { get; set; } = null!;
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -58,5 +60,37 @@ public sealed class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, G
             .HasOne(g => g.Owner)
             .WithMany(u => u.OwnedGroups)
             .HasForeignKey(g => g.OwnerId);
+        
+        builder.Entity<Message>()
+            .Property(m => m.SentAt)
+            .HasDefaultValueSql("NOW()");
+        
+        builder.Entity<GroupMessage>()
+            .Property(gm => gm.SentAt)
+            .HasDefaultValueSql("NOW()");
+        
+        builder.Entity<Message>()
+            .HasOne(m => m.Sender)
+            .WithMany(u => u.SentMessages)
+            .HasForeignKey(m => m.SenderId)
+            .OnDelete(DeleteBehavior.Restrict);
+        
+        builder.Entity<Message>()
+            .HasOne(m => m.Receiver)
+            .WithMany(u => u.ReceivedMessages)
+            .HasForeignKey(m => m.ReceiverId)
+            .OnDelete(DeleteBehavior.Restrict);
+        
+        builder.Entity<GroupMessage>()
+            .HasOne(gm => gm.Sender)
+            .WithMany(u => u.SentGroupMessages)
+            .HasForeignKey(gm => gm.SenderId)
+            .OnDelete(DeleteBehavior.Restrict);
+        
+        builder.Entity<GroupMessage>()
+            .HasOne(gm => gm.Group)
+            .WithMany(g => g.ReceivedGroupMessages)
+            .HasForeignKey(gm => gm.GroupId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

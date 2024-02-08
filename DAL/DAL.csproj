@@ -7,11 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="HotChocolate.Abstractions" Version="14.0.0-p.30" />
         <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="8.0.1"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Folder Include="Models\Messages\"/>
     </ItemGroup>
 
 </Project>

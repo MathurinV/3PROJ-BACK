@@ -21,6 +21,9 @@ public class UserRepository(
         return await _context.Users
             .Include(u => u.UserGroups)
             .Include(u => u.OwnedGroups)
+            .Include(u => u.ReceivedMessages)
+            .Include(u => u.SentMessages)
+            .Include(u => u.SentGroupMessages)
             .ToListAsync();
     }
 
@@ -29,6 +32,9 @@ public class UserRepository(
         return await _context.Users
             .Include(u => u.UserGroups)
             .Include(u => u.OwnedGroups)
+            .Include(u => u.ReceivedMessages)
+            .Include(u => u.SentMessages)
+            .Include(u => u.SentGroupMessages)
             .FirstOrDefaultAsync(u => u.Id == id);
     }
 
@@ -37,6 +43,9 @@ public class UserRepository(
         return await _context.Users
             .Include(u => u.UserGroups)
             .Include(u => u.OwnedGroups)
+            .Include(u => u.ReceivedMessages)
+            .Include(u => u.SentMessages)
+            .Include(u => u.SentGroupMessages)
             .FirstOrDefaultAsync(u => u.Email == email);
     }
 
