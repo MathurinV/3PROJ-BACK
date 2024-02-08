@@ -1,4 +1,3 @@
-using System.Collections;
 using DAL.Models.Messages;
 
 namespace DAL.Repositories;

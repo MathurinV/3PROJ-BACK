@@ -24,6 +24,8 @@ public class UserRepository(
             .Include(u => u.ReceivedMessages)
             .Include(u => u.SentMessages)
             .Include(u => u.SentGroupMessages)
+            .Include(u => u.UserExpenses)
+            .ThenInclude(ue => ue.Expense)
             .ToListAsync();
     }
 
@@ -58,5 +60,11 @@ public class UserRepository(
         if (!await _roleManager.RoleExistsAsync(appUserInsertDto.Role)) return null;
         await _userManager.AddToRoleAsync(appUser, appUserInsertDto.Role);
         return appUser;
+    }
+
+    public async Task<SignInResult> SignInAsync(AppUserLoginDto appUserLoginDto)
+    {
+        return await _signInManager.PasswordSignInAsync(appUserLoginDto.Email, appUserLoginDto.Password,
+            appUserLoginDto.RememberMe, false);
     }
 }

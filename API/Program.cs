@@ -32,12 +32,10 @@ public class Program
             .AddQueryType(d => d.Name("Query"))
             .AddTypeExtension<UserQueries>()
             .AddTypeExtension<GroupQueries>()
-            
             .AddMutationType(d => d.Name("Mutation"))
             .AddTypeExtension<UserMutations>()
             .AddTypeExtension<GroupMutations>()
             .AddTypeExtension<MessageMutations>()
-            
             .AddType<AppUserType>()
             ;
 

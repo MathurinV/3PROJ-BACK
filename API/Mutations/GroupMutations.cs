@@ -22,7 +22,7 @@ public class GroupMutations
         await userGroupRepository.InsertAsync(userGroup);
         return await groupRepository.GetByIdAsync(currentGroup.Id);
     }
-    
+
     public async Task<Group?> JoinGroup([FromServices] IUserGroupRepository userGroupRepository,
         [FromServices] IGroupRepository groupRepository,
         UserGroupInsertDto userGroupInsertDto)
