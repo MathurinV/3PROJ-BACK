@@ -18,7 +18,8 @@ public class Program
         // Postgres identity db context
         builder.Services.AddDbContext<MoneyMinderDbContext>(options =>
         {
-            options.UseNpgsql(DockerEnv.ConnectionString);
+            options.UseNpgsql(DockerEnv.ConnectionString,
+                o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
         });
 
         // Add Identity
@@ -26,9 +27,13 @@ public class Program
             .AddEntityFrameworkStores<MoneyMinderDbContext>()
             .AddDefaultTokenProviders();
 
+        builder.Services.AddAuthentication();
+        
+        builder.Services.AddAuthorization();
+        
         // GraphQL
         builder.Services.AddGraphQLServer()
-            // Add db context
+            .AddAuthorization()
             .AddQueryType(d => d.Name("Query"))
             .AddTypeExtension<UserQueries>()
             .AddTypeExtension<GroupQueries>()
@@ -46,10 +51,9 @@ public class Program
             .AddScoped<IUserGroupRepository, UserGroupRepository>()
             .AddScoped<IMessageRepository, MessageRepository>()
             .AddScoped<IGroupMessageRepository, GroupMessageRepository>()
+            .AddScoped<IExpenseRepository, ExpenseRepository>()
+            .AddScoped<IUserExpenseRepository, UserExpenseRepository>()
             ;
-
-        // Add services to the container.
-        builder.Services.AddAuthorization();
 
         var app = builder.Build();
 
@@ -58,6 +62,9 @@ public class Program
 
         app.UseStaticFiles();
 
+        app.UseRouting();
+        
+        app.UseAuthentication();
         app.UseAuthorization();
 
         app.MapGraphQL(DockerEnv.ApiEndpoint);

@@ -12,6 +12,8 @@ public class GroupRepository(MoneyMinderDbContext context) : IGroupRepository
             .Include(g => g.UserGroups)
             .ThenInclude(ug => ug.User)
             .Include(g => g.Owner)
+            .Include(u => u.Expenses)
+            .ThenInclude(e => e.UserExpenses)
             .ToListAsync();
     }
 
@@ -21,6 +23,8 @@ public class GroupRepository(MoneyMinderDbContext context) : IGroupRepository
             .Include(g => g.UserGroups)
             .ThenInclude(ug => ug.User)
             .Include(g => g.Owner)
+            .Include(u => u.Expenses)
+            .ThenInclude(e => e.UserExpenses)
             .FirstOrDefaultAsync(g => g.Id == id);
     }
 

@@ -5,7 +5,7 @@ using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
 namespace API.Mutations;
 
-[ExtendObjectType(Name = "Mutation")]
+[ExtendObjectType("Mutation")]
 public class UserMutations
 {
     public async Task<AppUser?> CreateUser([FromServices] IUserRepository userRepository,

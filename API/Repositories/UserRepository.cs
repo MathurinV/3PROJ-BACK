@@ -11,14 +11,9 @@ public class UserRepository(
     RoleManager<AppRole> roleManager,
     SignInManager<AppUser> signInManager) : IUserRepository
 {
-    private readonly MoneyMinderDbContext _context = context;
-    private readonly RoleManager<AppRole> _roleManager = roleManager;
-    private readonly SignInManager<AppUser> _signInManager = signInManager;
-    private readonly UserManager<AppUser> _userManager = userManager;
-
     public async Task<ICollection<AppUser>> GetAllAsync()
     {
-        return await _context.Users
+        return await context.Users
             .Include(u => u.UserGroups)
             .Include(u => u.OwnedGroups)
             .Include(u => u.ReceivedMessages)
@@ -31,7 +26,7 @@ public class UserRepository(
 
     public async Task<AppUser?> GetByIdAsync(Guid id)
     {
-        return await _context.Users
+        return await context.Users
             .Include(u => u.UserGroups)
             .Include(u => u.OwnedGroups)
             .Include(u => u.ReceivedMessages)
@@ -42,7 +37,7 @@ public class UserRepository(
 
     public async Task<AppUser?> GetByEmailAsync(string email)
     {
-        return await _context.Users
+        return await context.Users
             .Include(u => u.UserGroups)
             .Include(u => u.OwnedGroups)
             .Include(u => u.ReceivedMessages)
@@ -55,16 +50,16 @@ public class UserRepository(
     {
         var appUser = appUserInsertDto.ToAppUser();
 
-        var result = await _userManager.CreateAsync(appUser, appUserInsertDto.Password);
+        var result = await userManager.CreateAsync(appUser, appUserInsertDto.Password);
         if (!result.Succeeded) return null;
-        if (!await _roleManager.RoleExistsAsync(appUserInsertDto.Role)) return null;
-        await _userManager.AddToRoleAsync(appUser, appUserInsertDto.Role);
+        if (!await roleManager.RoleExistsAsync(appUserInsertDto.Role)) return null;
+        await userManager.AddToRoleAsync(appUser, appUserInsertDto.Role);
         return appUser;
     }
 
     public async Task<SignInResult> SignInAsync(AppUserLoginDto appUserLoginDto)
     {
-        return await _signInManager.PasswordSignInAsync(appUserLoginDto.Email, appUserLoginDto.Password,
+        return await signInManager.PasswordSignInAsync(appUserLoginDto.Username, appUserLoginDto.Password,
             appUserLoginDto.RememberMe, false);
     }
 }

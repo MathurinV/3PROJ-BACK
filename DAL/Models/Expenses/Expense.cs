@@ -1,5 +1,6 @@
 using DAL.Models.Groups;
 using DAL.Models.UserExpenses;
+using DAL.Models.Users;
 using HotChocolate;
 
 namespace DAL.Models.Expenses;
@@ -12,5 +13,7 @@ public class Expense
     public decimal Amount { get; set; }
     public string Description { get; set; } = null!;
     public DateTime CreatedAt { get; set; }
+    [GraphQLIgnore] public Guid CreatedById { get; set; }
+    public AppUser CreatedBy { get; set; } = null!;
     public ICollection<UserExpense> UserExpenses { get; set; } = new List<UserExpense>();
 }

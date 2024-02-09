@@ -44,6 +44,7 @@ public sealed class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, G
         base.OnModelCreating(builder);
 
         builder.Entity<AppUser>().HasIndex(u => u.Email).IsUnique();
+        builder.Entity<AppUser>().HasIndex(u => u.UserName).IsUnique();
 
         builder.Entity<UserGroup>()
             .HasKey(ug => new { ug.UserId, ug.GroupId });
@@ -114,6 +115,12 @@ public sealed class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, G
             .HasOne(e => e.Group)
             .WithMany(g => g.Expenses)
             .HasForeignKey(e => e.GroupId)
+            .OnDelete(DeleteBehavior.Restrict);
+        
+        builder.Entity<Expense>()
+            .HasOne(e => e.CreatedBy)
+            .WithMany(u => u.CreatedExpenses)
+            .HasForeignKey(e => e.CreatedById)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.Entity<UserExpense>()
