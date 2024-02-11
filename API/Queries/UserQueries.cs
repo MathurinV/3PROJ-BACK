@@ -8,10 +8,15 @@ namespace API.Queries;
 [ExtendObjectType("Query")]
 public class UserQueries
 {
-    public async Task<IEnumerable<AppUser>> GetUsers([FromServices] IUserRepository userRepository)
-    {
-        return await userRepository.GetAllAsync();
-    }
+    // public async Task<IEnumerable<AppUser>> GetUsers([FromServices] IUserRepository userRepository)
+    // {
+    //     return await userRepository.GetAllAsync();
+    // }
+    [UseProjection]
+    [UseFiltering]
+    [UseSorting]
+    public IQueryable<AppUser> GetUsers([Service] IUserRepository userRepository) =>
+        userRepository.GetAll();
 
     public async Task<AppUser?> GetUser([FromServices] IUserRepository userRepository, Guid id)
     {

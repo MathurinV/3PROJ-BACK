@@ -23,3 +23,4 @@ The database is available at `http://localhost:5432`
 ## Configuration
 
 The docker-compose file is configured to use the .env file at the root of the project. You can change the environment variables in this file to fit your needs.
+

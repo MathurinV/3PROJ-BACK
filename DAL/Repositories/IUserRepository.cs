@@ -10,4 +10,5 @@ public interface IUserRepository
     public Task<AppUser?> GetByEmailAsync(string email);
     public Task<AppUser?> InsertAsync(AppUserInsertDto appUserInsertDto);
     public Task<SignInResult> SignInAsync(AppUserLoginDto appUserLoginDto);
+    IQueryable<AppUser> GetAll();
 }

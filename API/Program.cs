@@ -42,6 +42,9 @@ public class Program
             .AddTypeExtension<GroupMutations>()
             .AddTypeExtension<MessageMutations>()
             .AddType<AppUserType>()
+            .AddFiltering()
+            .AddSorting()
+            .AddProjections()
             ;
 
         // Dependency Injection

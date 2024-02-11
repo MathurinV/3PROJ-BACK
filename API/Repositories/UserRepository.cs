@@ -62,4 +62,9 @@ public class UserRepository(
         return await signInManager.PasswordSignInAsync(appUserLoginDto.Username, appUserLoginDto.Password,
             appUserLoginDto.RememberMe, false);
     }
+
+    public IQueryable<AppUser> GetAll()
+    {
+        return context.Users;
+    }
 }
