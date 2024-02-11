@@ -4,12 +4,13 @@ using DAL.Models.Messages;
 using DAL.Models.UserExpenses;
 using DAL.Models.UserGroups;
 using DAL.Models.Users;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace API;
 
-public sealed class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, Guid>
+public sealed class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, Guid>, IDataProtectionKeyContext
 {
     public MoneyMinderDbContext(DbContextOptions<MoneyMinderDbContext> options) : base(options)
     {
@@ -31,7 +32,7 @@ public sealed class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, G
         }
     }
 
-
+    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
     public DbSet<Group> Groups { get; set; } = null!;
     public DbSet<UserGroup> UserGroups { get; set; } = null!;
     public DbSet<Message> Messages { get; set; } = null!;

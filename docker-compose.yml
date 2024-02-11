@@ -21,6 +21,11 @@ services:
             - "${API_PORT}:8080"
         depends_on:
             - db
+        healthcheck:
+            test: [ "CMD", "curl", "-f", "http://localhost:8080/health" ]
+            interval: 30s
+            timeout: 10s
+            retries: 5
     db:
         image: postgres:alpine
         environment:
@@ -29,7 +34,12 @@ services:
             POSTGRES_DB: ${POSTGRES_DB}
         networks:
             - local
-#  dev only:
+        #  dev only:
         ports:
             - "${DB_PORT}:5432"
+        healthcheck:
+            test: [ "CMD", "pg_isready", "-U", "${POSTGRES_USER}" ]
+            interval: 30s
+            timeout: 10s
+            retries: 5
 

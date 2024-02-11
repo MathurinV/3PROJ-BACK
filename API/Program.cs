@@ -4,6 +4,9 @@ using API.Repositories;
 using API.Types;
 using DAL.Models.Users;
 using DAL.Repositories;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,10 +30,18 @@ public class Program
             .AddEntityFrameworkStores<MoneyMinderDbContext>()
             .AddDefaultTokenProviders();
 
+        builder.Services.AddDataProtection()
+            .PersistKeysToDbContext<MoneyMinderDbContext>()
+            .UseCryptographicAlgorithms(new AuthenticatedEncryptorConfiguration
+            {
+                EncryptionAlgorithm = EncryptionAlgorithm.AES_256_GCM,
+                ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
+            });
+
         builder.Services.AddAuthentication();
-        
+
         builder.Services.AddAuthorization();
-        
+
         // GraphQL
         builder.Services.AddGraphQLServer()
             .AddAuthorization()
@@ -58,6 +69,10 @@ public class Program
             .AddScoped<IUserExpenseRepository, UserExpenseRepository>()
             ;
 
+        // Health checks
+        builder.Services.AddHealthChecks()
+            .AddNpgSql(DockerEnv.ConnectionString);
+        
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
@@ -66,11 +81,13 @@ public class Program
         app.UseStaticFiles();
 
         app.UseRouting();
-        
+
         app.UseAuthentication();
         app.UseAuthorization();
 
         app.MapGraphQL(DockerEnv.ApiEndpoint);
+        app.MapHealthChecks("/health")
+            .RequireHost("localhost");
 
         app.Run();
     }
