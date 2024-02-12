@@ -1,5 +1,3 @@
-using DAL.Models.UserExpenses;
-
 namespace DAL.Models.Expenses;
 
 public class ExpenseInsertDto

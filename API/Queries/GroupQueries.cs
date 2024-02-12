@@ -1,6 +1,5 @@
 using DAL.Models.Groups;
 using DAL.Repositories;
-using HotChocolate.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Queries;
@@ -8,13 +7,19 @@ namespace API.Queries;
 [ExtendObjectType("Query")]
 public class GroupQueries
 {
-    public async Task<IEnumerable<Group>> GetGroups([FromServices] IGroupRepository groupRepository)
+    [UseProjection]
+    [UseFiltering]
+    [UseSorting]
+    public IQueryable<Group> GetGroups([FromServices] IGroupRepository groupRepository)
     {
-        return await groupRepository.GetAllAsync();
+        return groupRepository.GetAll();
     }
 
-    public async Task<Group?> GetGroup([FromServices] IGroupRepository groupRepository, Guid id)
+    [UseProjection]
+    [UseFiltering]
+    [UseSorting]
+    public IQueryable<Group?> GetGroupById([FromServices] IGroupRepository groupRepository, Guid id)
     {
-        return await groupRepository.GetByIdAsync(id);
+        return groupRepository.GetById(id);
     }
 }

@@ -3,7 +3,7 @@ using DAL.Repositories;
 
 namespace API.Repositories;
 
-public class ExpenseRepository(MoneyMinderDbContext context): IExpenseRepository
+public class ExpenseRepository(MoneyMinderDbContext context) : IExpenseRepository
 {
     public async Task<Expense?> InsertAsync(ExpenseInsertDto expenseInsertDto)
     {

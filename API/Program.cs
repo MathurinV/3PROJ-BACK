@@ -72,7 +72,7 @@ public class Program
         // Health checks
         builder.Services.AddHealthChecks()
             .AddNpgSql(DockerEnv.ConnectionString);
-        
+
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.

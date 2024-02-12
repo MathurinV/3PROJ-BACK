@@ -6,26 +6,14 @@ namespace API.Repositories;
 
 public class GroupRepository(MoneyMinderDbContext context) : IGroupRepository
 {
-    public async Task<ICollection<Group>> GetAllAsync()
+    public IQueryable<Group> GetAll()
     {
-        return await context.Groups
-            .Include(g => g.UserGroups)
-            .ThenInclude(ug => ug.User)
-            .Include(g => g.Owner)
-            .Include(u => u.Expenses)
-            .ThenInclude(e => e.UserExpenses)
-            .ToListAsync();
+        return context.Groups;
     }
 
-    public async Task<Group?> GetByIdAsync(Guid id)
+    public IQueryable<Group?> GetById(Guid id)
     {
-        return await context.Groups
-            .Include(g => g.UserGroups)
-            .ThenInclude(ug => ug.User)
-            .Include(g => g.Owner)
-            .Include(u => u.Expenses)
-            .ThenInclude(e => e.UserExpenses)
-            .FirstOrDefaultAsync(g => g.Id == id);
+        return context.Groups.Where(g => g.Id == id);
     }
 
     public async Task<Group?> InsertAsync(GroupInsertDto groupInsertDto)
@@ -34,5 +22,10 @@ public class GroupRepository(MoneyMinderDbContext context) : IGroupRepository
         await context.Groups.AddAsync(group);
         await context.SaveChangesAsync();
         return group;
+    }
+
+    public async Task<Group?> GetByIdAsync(Guid currentGroupId)
+    {
+        return await context.Groups.FirstOrDefaultAsync(g => g.Id == currentGroupId);
     }
 }

@@ -22,7 +22,7 @@ public class GroupMutations
             GroupId = currentGroup.Id
         };
         await userGroupRepository.InsertAsync(userGroup);
-        return await groupRepository.GetByIdAsync(currentGroup.Id);
+        return groupRepository.GetByIdAsync(currentGroup.Id).Result;
     }
 
     public async Task<Group?> JoinGroup([FromServices] IUserGroupRepository userGroupRepository,
@@ -39,8 +39,8 @@ public class GroupMutations
     }
 
     public async Task<ICollection<UserExpense?>> AddUserExpenses(
-        [FromServices]IUserExpenseRepository userExpenseRepository,
-        [FromServices]IExpenseRepository expenseRepository,
+        [FromServices] IUserExpenseRepository userExpenseRepository,
+        [FromServices] IExpenseRepository expenseRepository,
         ExpenseInsertDto expenseInsertDto
     )
     {
@@ -48,16 +48,14 @@ public class GroupMutations
         if (expense == null) return [];
         var totalWeight = expenseInsertDto.WeightedUsers.Sum(x => x.Value);
         var userExpenses = new List<UserExpenseInsertDto>();
-        
+
         foreach (var (userId, weight) in expenseInsertDto.WeightedUsers)
-        {
             userExpenses.Add(new UserExpenseInsertDto
             {
                 ExpenseId = expense.Id,
                 UserId = userId,
                 Amount = expense.Amount * weight / totalWeight
             });
-        }
         return await userExpenseRepository.InsertManyAsync(userExpenses);
     }
 }

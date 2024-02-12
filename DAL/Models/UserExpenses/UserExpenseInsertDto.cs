@@ -5,7 +5,7 @@ public class UserExpenseInsertDto
     public Guid ExpenseId { get; set; }
     public Guid UserId { get; set; }
     public decimal Amount { get; set; }
-    
+
     public UserExpense ToUserExpense()
     {
         return new UserExpense

@@ -1,7 +1,6 @@
 using DAL.Models.Users;
 using DAL.Repositories;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories;
 
@@ -11,41 +10,6 @@ public class UserRepository(
     RoleManager<AppRole> roleManager,
     SignInManager<AppUser> signInManager) : IUserRepository
 {
-    public async Task<ICollection<AppUser>> GetAllAsync()
-    {
-        return await context.Users
-            .Include(u => u.UserGroups)
-            .Include(u => u.OwnedGroups)
-            .Include(u => u.ReceivedMessages)
-            .Include(u => u.SentMessages)
-            .Include(u => u.SentGroupMessages)
-            .Include(u => u.UserExpenses)
-            .ThenInclude(ue => ue.Expense)
-            .ToListAsync();
-    }
-
-    public async Task<AppUser?> GetByIdAsync(Guid id)
-    {
-        return await context.Users
-            .Include(u => u.UserGroups)
-            .Include(u => u.OwnedGroups)
-            .Include(u => u.ReceivedMessages)
-            .Include(u => u.SentMessages)
-            .Include(u => u.SentGroupMessages)
-            .FirstOrDefaultAsync(u => u.Id == id);
-    }
-
-    public async Task<AppUser?> GetByEmailAsync(string email)
-    {
-        return await context.Users
-            .Include(u => u.UserGroups)
-            .Include(u => u.OwnedGroups)
-            .Include(u => u.ReceivedMessages)
-            .Include(u => u.SentMessages)
-            .Include(u => u.SentGroupMessages)
-            .FirstOrDefaultAsync(u => u.Email == email);
-    }
-
     public async Task<AppUser?> InsertAsync(AppUserInsertDto appUserInsertDto)
     {
         var appUser = appUserInsertDto.ToAppUser();
@@ -66,5 +30,15 @@ public class UserRepository(
     public IQueryable<AppUser> GetAll()
     {
         return context.Users;
+    }
+
+    public IQueryable<AppUser?> GetById(Guid id)
+    {
+        return context.Users.Where(u => u.Id == id);
+    }
+
+    public IQueryable<AppUser?> GetByEmail(string email = null!)
+    {
+        return context.Users.Where(u => u.Email == email);
     }
 }
