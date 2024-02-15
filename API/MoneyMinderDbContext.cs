@@ -1,5 +1,6 @@
 using DAL.Models.Expenses;
 using DAL.Models.Groups;
+using DAL.Models.Invitations;
 using DAL.Models.Messages;
 using DAL.Models.UserExpenses;
 using DAL.Models.UserGroups;
@@ -32,14 +33,15 @@ public sealed class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, G
         }
     }
 
-    public DbSet<Group> Groups { get; set; } = null!;
-    public DbSet<UserGroup> UserGroups { get; set; } = null!;
-    public DbSet<Message> Messages { get; set; } = null!;
-    public DbSet<GroupMessage> GroupMessages { get; set; } = null!;
-    public DbSet<Expense> Expenses { get; set; } = null!;
-    public DbSet<UserExpense> UserExpenses { get; set; } = null!;
+    public DbSet<Group> Groups { get; set; }
+    public DbSet<UserGroup> UserGroups { get; set; }
+    public DbSet<Message> Messages { get; set; }
+    public DbSet<GroupMessage> GroupMessages { get; set; }
+    public DbSet<Expense> Expenses { get; set; }
+    public DbSet<UserExpense> UserExpenses { get; set; }
 
-    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
+    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
+    public DbSet<Invitation> Invitations { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -60,6 +62,10 @@ public sealed class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, G
 
         builder.Entity<Expense>()
             .Property(e => e.CreatedAt)
+            .HasDefaultValueSql("NOW()");
+
+        builder.Entity<Invitation>()
+            .Property(i => i.InvitedAt)
             .HasDefaultValueSql("NOW()");
 
         builder.Entity<UserExpense>()
@@ -135,6 +141,21 @@ public sealed class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, G
             .HasOne(ue => ue.Expense)
             .WithMany(e => e.UserExpenses)
             .HasForeignKey(ue => ue.ExpenseId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Invitation>()
+            .HasKey(i => new { i.UserId, i.GroupId });
+
+        builder.Entity<Invitation>()
+            .HasOne(i => i.Group)
+            .WithMany(g => g.Invitations)
+            .HasForeignKey(i => i.GroupId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Invitation>()
+            .HasOne(i => i.User)
+            .WithMany(u => u.Invitations)
+            .HasForeignKey(i => i.UserId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

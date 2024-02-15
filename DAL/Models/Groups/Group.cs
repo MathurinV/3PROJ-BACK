@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using DAL.Models.Expenses;
+using DAL.Models.Invitations;
 using DAL.Models.Messages;
 using DAL.Models.UserGroups;
 using DAL.Models.Users;
@@ -18,4 +19,5 @@ public class Group
     public AppUser Owner { get; set; } = null!;
     public ICollection<GroupMessage> ReceivedGroupMessages { get; set; } = new List<GroupMessage>();
     public ICollection<Expense> Expenses { get; set; } = new List<Expense>();
+    public ICollection<Invitation> Invitations { get; set; } = new List<Invitation>();
 }

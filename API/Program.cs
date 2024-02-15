@@ -67,6 +67,7 @@ public class Program
             .AddScoped<IGroupMessageRepository, GroupMessageRepository>()
             .AddScoped<IExpenseRepository, ExpenseRepository>()
             .AddScoped<IUserExpenseRepository, UserExpenseRepository>()
+            .AddScoped<IInvitationRepository, InvitationRepository>()
             ;
 
         // Health checks

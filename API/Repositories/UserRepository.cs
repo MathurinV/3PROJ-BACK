@@ -27,6 +27,12 @@ public class UserRepository(
             appUserLoginDto.RememberMe, false);
     }
 
+    public async Task<bool> SIgnOutAsync()
+    {
+        await signInManager.SignOutAsync();
+        return true;
+    }
+
     public IQueryable<AppUser> GetAll()
     {
         return context.Users;

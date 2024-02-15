@@ -1,15 +1,19 @@
 using DAL.Models.Expenses;
 using DAL.Models.Groups;
+using DAL.Models.Invitations;
 using DAL.Models.UserExpenses;
 using DAL.Models.UserGroups;
 using DAL.Repositories;
+using HotChocolate.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Mutations;
 
 [ExtendObjectType("Mutation")]
 public class GroupMutations
 {
+    [Authorize]
     public async Task<Group?> CreateGroup([FromServices] IGroupRepository groupRepository,
         [FromServices] IUserGroupRepository userGroupRepository,
         GroupInsertDto groupInsertDto)
@@ -24,20 +28,21 @@ public class GroupMutations
         await userGroupRepository.InsertAsync(userGroup);
         return groupRepository.GetByIdAsync(currentGroup.Id).Result;
     }
-
-    public async Task<Group?> JoinGroup([FromServices] IUserGroupRepository userGroupRepository,
+    
+    [Authorize]
+    public async Task<Invitation?> InviteUser([FromServices] IInvitationRepository invitationRepository,
         [FromServices] IGroupRepository groupRepository,
-        UserGroupInsertDto userGroupInsertDto)
+        [FromServices] IUserRepository userRepository,
+        InvitationInsertDto invitationInsertDto)
     {
-        var userGroup = new UserGroupInsertDto
-        {
-            UserId = userGroupInsertDto.UserId,
-            GroupId = userGroupInsertDto.GroupId
-        };
-        await userGroupRepository.InsertAsync(userGroup);
-        return await groupRepository.GetByIdAsync(userGroupInsertDto.GroupId);
+        var group = await groupRepository.GetByIdAsync(invitationInsertDto.GroupId);
+        if (group == null) return null;
+        var user = userRepository.GetById(invitationInsertDto.UserId);
+        if (await user.FirstAsync() == null) return null;
+        return await invitationRepository.InsertAsync(invitationInsertDto);
     }
 
+    [Authorize]
     public async Task<ICollection<UserExpense?>> AddUserExpenses(
         [FromServices] IUserExpenseRepository userExpenseRepository,
         [FromServices] IExpenseRepository expenseRepository,

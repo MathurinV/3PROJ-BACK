@@ -1,5 +1,6 @@
 using DAL.Models.Expenses;
 using DAL.Models.Groups;
+using DAL.Models.Invitations;
 using DAL.Models.Messages;
 using DAL.Models.UserExpenses;
 using DAL.Models.UserGroups;
@@ -17,4 +18,5 @@ public class AppUser : IdentityUser<Guid>
     public ICollection<GroupMessage> SentGroupMessages { get; set; } = new List<GroupMessage>();
     public ICollection<UserExpense> UserExpenses { get; set; } = new List<UserExpense>();
     public ICollection<Expense> CreatedExpenses { get; set; } = new List<Expense>();
+    public ICollection<Invitation> Invitations { get; set; } = new List<Invitation>();
 }
