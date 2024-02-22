@@ -37,4 +37,17 @@ public class UserMutations
         if (!await invitationRepository.DeleteAsync(userGroupInsertDto.GroupId, userGroupInsertDto.UserId)) return null;
         return await userGroupRepository.InsertAsync(userGroupInsertDto);
     }
+    
+    [Authorize]
+    public async Task<bool> PayDuesByUserId([FromServices] IUserExpenseRepository userExpenseRepository,
+        Guid userId){
+        return await userExpenseRepository.PayByUserId(userId);
+    }
+    
+    [Authorize]
+    public async Task<bool> AddToBalance([FromServices] IUserRepository userRepository,
+        Guid userId, decimal amount)
+    {
+        return await userRepository.AddToBalance(userId, amount);
+    }
 }

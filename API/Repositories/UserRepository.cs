@@ -33,6 +33,15 @@ public class UserRepository(
         return true;
     }
 
+    public async Task<bool> AddToBalance(Guid userId, decimal amount)
+    {
+        var user = await context.Users.FindAsync(userId);
+        if (user == null) return false;
+        user.Balance += amount;
+        await context.SaveChangesAsync();
+        return true;
+    }
+
     public IQueryable<AppUser> GetAll()
     {
         return context.Users;

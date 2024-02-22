@@ -21,8 +21,9 @@ public class Program
         // Postgres identity db context
         builder.Services.AddDbContext<MoneyMinderDbContext>(options =>
         {
-            options.UseNpgsql(DockerEnv.ConnectionString,
-                o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
+            options.UseNpgsql(DockerEnv.ConnectionString
+                , o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
+            );
         });
 
         // Add Identity
