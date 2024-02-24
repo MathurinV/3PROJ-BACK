@@ -1,3 +1,4 @@
+using API.ErrorsHandling;
 using API.Mutations;
 using API.Queries;
 using API.Repositories;
@@ -46,6 +47,7 @@ public class Program
         // GraphQL
         builder.Services.AddGraphQLServer()
             .AddAuthorization()
+            .AddErrorFilter<GraphQlErrorFilter>()
             .AddQueryType(d => d.Name("Query"))
             .AddTypeExtension<UserQueries>()
             .AddTypeExtension<GroupQueries>()
