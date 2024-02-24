@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using API.ErrorsHandling.UsersHandling;
 using DAL.Models.UserGroups;
 using DAL.Models.Users;
 using DAL.Repositories;
@@ -15,28 +16,14 @@ public class UserMutations
     public async Task<AppUser?> CreateUser([FromServices] IUserRepository userRepository, [FromServices] UserManager<AppUser> userManager,
         AppUserInsertDto appUserInsertDto)
     {
-        var validationContext = new ValidationContext(appUserInsertDto, null, null);
-        var validationResults = new List<ValidationResult>();
-        var isValid = Validator.TryValidateObject(appUserInsertDto, validationContext, validationResults, true);
-
-        var passwordValidationResult = await userManager.PasswordValidators.First().ValidateAsync(userManager, null, appUserInsertDto.Password);
-        if (!passwordValidationResult.Succeeded)
-        {
-            validationResults.AddRange(passwordValidationResult.Errors.Select(e => new ValidationResult(e.Description)));
-        }
-
-        if (!isValid || validationResults.Count > 0)
-        {
-            var errors = string.Join(", ", validationResults.Select(e => e.ErrorMessage));
-            throw new Exception($"Validation failed: {errors}");
-        }
-
+        AppUserInsertDtoHandling.ValidateAppUserInsertDto(userManager, appUserInsertDto);
         return await userRepository.InsertAsync(appUserInsertDto);
     }
 
-    public async Task<SignInResult> SignIn([FromServices] IUserRepository userRepository,
+    public async Task<SignInResult> SignIn([FromServices] IUserRepository userRepository, [FromServices] UserManager<AppUser> userManager,
         AppUserLoginDto appUserLoginDto)
     {
+        AppUserLoginDtoHandling.ValidateAppUserLoginDto(userManager, appUserLoginDto);
         return await userRepository.SignInAsync(appUserLoginDto);
     }
     
