@@ -26,10 +26,8 @@ public class UserExpenseRepository(MoneyMinderDbContext context) : IUserExpenseR
         var enumerable = userExpenses as UserExpense[] ?? userExpenses.ToArray();
         var moneyDue = enumerable.Sum(ue => ue.Amount);
         if (user.Balance < moneyDue) return false;
-        foreach (var userExpense in enumerable)
-        {
-            userExpense.PaidAt = DateTime.UtcNow;
-        }
+        foreach (var userExpense in enumerable) userExpense.PaidAt = DateTime.UtcNow;
+
         user.Balance -= moneyDue;
         await context.SaveChangesAsync();
         return true;

@@ -33,7 +33,7 @@ public class GroupMutations
         await userGroupRepository.InsertAsync(userGroup);
         return groupRepository.GetByIdAsync(currentGroup.Id).Result;
     }
-    
+
     [Authorize]
     public async Task<Invitation?> InviteUser([FromServices] IInvitationRepository invitationRepository,
         [FromServices] IGroupRepository groupRepository,
@@ -48,7 +48,7 @@ public class GroupMutations
         var user = userRepository.GetById(invitationInsertDto.UserId);
         if (await user.FirstAsync() == null) throw new Exception("User not found");
         if (Guid.Parse(userId) == invitationInsertDto.UserId) throw new Exception("You can't invite yourself ???");
-        
+
         return await invitationRepository.InsertAsync(invitationInsertDto);
     }
 

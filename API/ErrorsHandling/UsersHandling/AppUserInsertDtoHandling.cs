@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using DAL.Models.Users;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 
 namespace API.ErrorsHandling.UsersHandling;
 
@@ -18,10 +17,8 @@ public static class AppUserInsertDtoHandling
         var passwordValidationResult = userManager.PasswordValidators.First()
             .ValidateAsync(userManager, null, appUserInsertDto.Password).Result;
         if (!passwordValidationResult.Succeeded)
-        {
             validationResults.AddRange(
                 passwordValidationResult.Errors.Select(e => new ValidationResult(e.Description)));
-        }
 
         if (!isValid || validationResults.Count > 0)
         {

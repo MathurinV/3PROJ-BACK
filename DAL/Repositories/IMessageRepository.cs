@@ -4,6 +4,6 @@ namespace DAL.Repositories;
 
 public interface IMessageRepository
 {
-    public Task<ICollection<Message>> GetAllAsync();
-    public Task<Message?> InsertAsync(MessageInsertDto messageInsertDto);
+    Task<ICollection<Message>> GetAllAsync();
+    Task<Message?> InsertAsync(MessageInsertDto messageInsertDto);
 }

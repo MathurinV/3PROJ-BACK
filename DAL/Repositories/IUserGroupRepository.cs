@@ -4,5 +4,5 @@ namespace DAL.Repositories;
 
 public interface IUserGroupRepository
 {
-    public Task<UserGroup?> InsertAsync(UserGroupInsertDto userGroupInsertDto);
+    Task<UserGroup?> InsertAsync(UserGroupInsertDto userGroupInsertDto);
 }

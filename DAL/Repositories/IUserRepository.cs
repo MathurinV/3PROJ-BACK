@@ -5,10 +5,10 @@ namespace DAL.Repositories;
 
 public interface IUserRepository
 {
-    public Task<AppUser?> InsertAsync(AppUserInsertDto appUserInsertDto);
-    public Task<SignInResult> SignInAsync(AppUserLoginDto appUserLoginDto);
-    public Task<bool> SIgnOutAsync();
-    public Task<bool> AddToBalance(Guid userId, decimal amount);
+    Task<AppUser?> InsertAsync(AppUserInsertDto appUserInsertDto);
+    Task<SignInResult> SignInAsync(AppUserLoginDto appUserLoginDto);
+    Task<bool> SignOutAsync();
+    Task<bool> AddToBalance(Guid userId, decimal amount);
     IQueryable<AppUser> GetAll();
     IQueryable<AppUser?> GetById(Guid id);
     IQueryable<AppUser?> GetByEmail(string email = null!);

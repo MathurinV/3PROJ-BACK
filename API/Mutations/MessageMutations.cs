@@ -26,6 +26,7 @@ public class MessageMutations
     {
         var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (userId == null) return null;
-        return await groupMessageRepository.InsertAsync(groupMessageInsertInput.ToGroupMessageInsertDto(Guid.Parse(userId)));
+        return await groupMessageRepository.InsertAsync(
+            groupMessageInsertInput.ToGroupMessageInsertDto(Guid.Parse(userId)));
     }
 }

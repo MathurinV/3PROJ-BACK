@@ -8,13 +8,15 @@ namespace Test;
 
 public class UnitTest1
 {
-    public static string GraphQlUrl { get; } = "http://localhost:3000/graphql";
-    private readonly ITestOutputHelper _testOutputHelper;
     private readonly HttpClient _client = new();
+    private readonly ITestOutputHelper _testOutputHelper;
+
     public UnitTest1(ITestOutputHelper testOutputHelper)
     {
         _testOutputHelper = testOutputHelper;
     }
+
+    public static string GraphQlUrl { get; } = "http://localhost:3000/graphql";
 
     [Fact]
     public void QueriesExistingUsers()

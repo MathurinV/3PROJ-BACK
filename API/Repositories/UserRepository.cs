@@ -27,7 +27,7 @@ public class UserRepository(
             appUserLoginDto.RememberMe, false);
     }
 
-    public async Task<bool> SIgnOutAsync()
+    public async Task<bool> SignOutAsync()
     {
         await signInManager.SignOutAsync();
         return true;

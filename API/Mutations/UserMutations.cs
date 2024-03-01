@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using API.ErrorsHandling.UsersHandling;
 using DAL.Models.UserGroups;
@@ -33,7 +32,7 @@ public class UserMutations
     [Authorize]
     public async Task<bool> SIgnOut([FromServices] IUserRepository userRepository)
     {
-        return await userRepository.SIgnOutAsync();
+        return await userRepository.SignOutAsync();
     }
 
     [Authorize]
@@ -46,7 +45,8 @@ public class UserMutations
         var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (userId == null) return null;
         var userGroupInsertDto = userGroupInsertInput.ToUserGroupInsertDto(Guid.Parse(userId));
-        if (!await invitationRepository.DeleteAsync(userGroupInsertDto.GroupId, userGroupInsertDto.UserId)) throw new Exception("Invitation not found");
+        if (!await invitationRepository.DeleteAsync(userGroupInsertDto.GroupId, userGroupInsertDto.UserId))
+            throw new Exception("Invitation not found");
         return await userGroupRepository.InsertAsync(userGroupInsertDto);
     }
 

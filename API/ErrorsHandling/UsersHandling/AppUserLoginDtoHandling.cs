@@ -17,10 +17,8 @@ public static class AppUserLoginDtoHandling
         var passwordValidationResult = userManager.PasswordValidators.First()
             .ValidateAsync(userManager, null, appUserInsertDto.Password).Result;
         if (!passwordValidationResult.Succeeded)
-        {
             validationResults.AddRange(
                 passwordValidationResult.Errors.Select(e => new ValidationResult(e.Description)));
-        }
 
         if (!isValid || validationResults.Count > 0)
         {

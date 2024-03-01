@@ -4,11 +4,14 @@ public class MessageInsertInput
 {
     public Guid ReceiverId { get; set; }
     public string Content { get; set; } = null!;
-    
-    public MessageInsertDto ToMessageInsertDto(Guid senderId) => new()
+
+    public MessageInsertDto ToMessageInsertDto(Guid senderId)
     {
-        SenderId = senderId,
-        ReceiverId = ReceiverId,
-        Content = Content
-    };
+        return new MessageInsertDto
+        {
+            SenderId = senderId,
+            ReceiverId = ReceiverId,
+            Content = Content
+        };
+    }
 }

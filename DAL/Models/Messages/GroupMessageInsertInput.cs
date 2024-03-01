@@ -4,11 +4,14 @@ public class GroupMessageInsertInput
 {
     public Guid GroupId { get; set; }
     public string Content { get; set; } = null!;
-    
-    public GroupMessageInsertDto ToGroupMessageInsertDto(Guid senderId) => new()
+
+    public GroupMessageInsertDto ToGroupMessageInsertDto(Guid senderId)
     {
-        SenderId = senderId,
-        GroupId = GroupId,
-        Content = Content
-    };
+        return new GroupMessageInsertDto
+        {
+            SenderId = senderId,
+            GroupId = GroupId,
+            Content = Content
+        };
+    }
 }
