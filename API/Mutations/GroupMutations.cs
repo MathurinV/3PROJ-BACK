@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using DAL.Models.Expenses;
 using DAL.Models.Groups;
 using DAL.Models.Invitations;
@@ -16,10 +17,14 @@ public class GroupMutations
     [Authorize]
     public async Task<Group?> CreateGroup([FromServices] IGroupRepository groupRepository,
         [FromServices] IUserGroupRepository userGroupRepository,
-        GroupInsertDto groupInsertDto)
+        [FromServices] IHttpContextAccessor httpContextAccessor,
+        GroupInsertInput groupInsertInput)
     {
-        var currentGroup = await groupRepository.InsertAsync(groupInsertDto);
-        if (currentGroup == null) return null;
+        var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userId == null) return null;
+        Console.WriteLine(userId);
+        var currentGroup = await groupRepository.InsertAsync(groupInsertInput.ToGroupInsertDto(Guid.Parse(userId)));
+        if (currentGroup == null) throw new Exception("Group not created");
         var userGroup = new UserGroupInsertDto
         {
             UserId = currentGroup.OwnerId,
@@ -33,12 +38,17 @@ public class GroupMutations
     public async Task<Invitation?> InviteUser([FromServices] IInvitationRepository invitationRepository,
         [FromServices] IGroupRepository groupRepository,
         [FromServices] IUserRepository userRepository,
+        [FromServices] IHttpContextAccessor httpContextAccessor,
         InvitationInsertDto invitationInsertDto)
     {
+        var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userId == null) return null;
         var group = await groupRepository.GetByIdAsync(invitationInsertDto.GroupId);
-        if (group == null) return null;
+        if (group == null) throw new Exception("Group not found");
         var user = userRepository.GetById(invitationInsertDto.UserId);
-        if (await user.FirstAsync() == null) return null;
+        if (await user.FirstAsync() == null) throw new Exception("User not found");
+        if (Guid.Parse(userId) == invitationInsertDto.UserId) throw new Exception("You can't invite yourself ???");
+        
         return await invitationRepository.InsertAsync(invitationInsertDto);
     }
 

@@ -18,9 +18,11 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        var services = builder.Services;
+        var configuration = builder.Configuration;
 
         // Postgres identity db context
-        builder.Services.AddDbContext<MoneyMinderDbContext>(options =>
+        services.AddDbContext<MoneyMinderDbContext>(options =>
         {
             options.UseNpgsql(DockerEnv.ConnectionString
                 , o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
@@ -28,11 +30,11 @@ public class Program
         });
 
         // Add Identity
-        builder.Services.AddIdentity<AppUser, AppRole>()
+        services.AddIdentity<AppUser, AppRole>()
             .AddEntityFrameworkStores<MoneyMinderDbContext>()
             .AddDefaultTokenProviders();
 
-        builder.Services.AddDataProtection()
+        services.AddDataProtection()
             .PersistKeysToDbContext<MoneyMinderDbContext>()
             .UseCryptographicAlgorithms(new AuthenticatedEncryptorConfiguration
             {
@@ -40,12 +42,20 @@ public class Program
                 ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
             });
 
-        builder.Services.AddAuthentication();
+        services.AddAuthentication()
+            // .AddGoogle(googleOptions =>
+            // {
+            //     googleOptions.ClientId = configuration["Authentication:Google:ClientId"];
+            //     googleOptions.ClientSecret = configuration["Authentication:Google:ClientSecret"];
+            // })
+            
+            ;
 
-        builder.Services.AddAuthorization();
+        services.AddAuthorization();
 
         // GraphQL
-        builder.Services.AddGraphQLServer()
+        services
+            .AddGraphQLServer()
             .AddAuthorization()
             .AddErrorFilter<GraphQlErrorFilter>()
             .AddQueryType(d => d.Name("Query"))
@@ -62,7 +72,7 @@ public class Program
             ;
 
         // Dependency Injection
-        builder.Services
+        services
             .AddScoped<IUserRepository, UserRepository>()
             .AddScoped<IGroupRepository, GroupRepository>()
             .AddScoped<IUserGroupRepository, UserGroupRepository>()
@@ -74,7 +84,7 @@ public class Program
             ;
 
         // Health checks
-        builder.Services.AddHealthChecks()
+        services.AddHealthChecks()
             .AddNpgSql(DockerEnv.ConnectionString);
 
         var app = builder.Build();
