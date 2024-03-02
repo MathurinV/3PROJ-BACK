@@ -56,21 +56,47 @@ public class GroupMutations
     public async Task<ICollection<UserExpense?>> AddUserExpenses(
         [FromServices] IUserExpenseRepository userExpenseRepository,
         [FromServices] IExpenseRepository expenseRepository,
-        ExpenseInsertDto expenseInsertDto
+        [FromServices] IHttpContextAccessor httpContextAccessor,
+        ExpenseInsertInput expenseInsertInput
     )
     {
-        var expense = await expenseRepository.InsertAsync(expenseInsertDto);
-        if (expense == null) return [];
-        var totalWeight = expenseInsertDto.WeightedUsers.Sum(x => x.Value);
-        var userExpenses = new List<UserExpenseInsertDto>();
+        var createdByStringId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (createdByStringId == null) return [];
+        var createdByGuidId = Guid.Parse(createdByStringId);
+        var expenseInsertDto = expenseInsertInput.ToExpenseInsertDto(createdByGuidId);
 
-        foreach (var (userId, weight) in expenseInsertDto.WeightedUsers)
-            userExpenses.Add(new UserExpenseInsertDto
+        await using var transaction = await expenseRepository.BeginTransactionAsync();
+        try
+        {
+            var expense = await expenseRepository.InsertAsync(expenseInsertDto);
+            if (expense == null) return [];
+            
+            var totalWeight = expenseInsertInput.WeightedUsers.Sum(x => x.Value);
+            var userExpenses = new List<UserExpenseInsertDto>();
+
+            foreach (var (userId, userWeight) in expenseInsertDto.WeightedUsers)
             {
-                ExpenseId = expense.Id,
-                UserId = userId,
-                Amount = expense.Amount * weight / totalWeight
-            });
-        return await userExpenseRepository.InsertManyAsync(userExpenses);
+                var amountDue = expense.Amount * userWeight / totalWeight;
+                if (Math.Round(amountDue, 2) != amountDue) throw new Exception($"The amount due for user {userId} is not a multiple of 0.01");
+                userExpenses.Add(new UserExpenseInsertDto
+                {
+                    ExpenseId = expense.Id,
+                    UserId = userId,
+                    Amount = amountDue
+                });
+            }
+            
+            var insertedUserExpenses = await userExpenseRepository.InsertManyAsync(userExpenses);
+            
+            await transaction.CommitAsync();
+            
+            return insertedUserExpenses;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+
     }
 }

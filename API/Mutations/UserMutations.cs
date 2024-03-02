@@ -30,7 +30,7 @@ public class UserMutations
     }
 
     [Authorize]
-    public async Task<bool> SIgnOut([FromServices] IUserRepository userRepository)
+    public async Task<bool> SignOut([FromServices] IUserRepository userRepository)
     {
         return await userRepository.SignOutAsync();
     }

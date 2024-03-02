@@ -1,5 +1,8 @@
+using System.Security.Claims;
 using DAL.Models.Users;
 using DAL.Repositories;
+using HotChocolate.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace API.Queries;
 
@@ -12,6 +15,15 @@ public class UserQueries
     public IQueryable<AppUser> GetUsers([Service] IUserRepository userRepository)
     {
         return userRepository.GetAll();
+    }
+    
+    [Authorize]
+    [UseProjection]
+    public IQueryable<AppUser?> GetCurrentUser([Service] IUserRepository userRepository, [FromServices] IHttpContextAccessor httpContextAccessor)
+    {
+        var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userId == null) throw new Exception("Issue with getting user id");
+        return userRepository.GetById(Guid.Parse(userId));
     }
 
     [UseProjection]

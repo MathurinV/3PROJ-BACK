@@ -16,6 +16,12 @@ public static class DockerEnv
 
     public static string ApiEndpoint { get; } = Environment.GetEnvironmentVariable("API_ENDPOINT") ??
                                                 throw new Exception("API_ENDPOINT is not set");
+    
+    public static string GoogleClientId { get; } = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID") ??
+                                                  throw new Exception("GOOGLE_CLIENT_ID is not set");
+    
+    public static string GoogleClientSecret { get; } = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET") ??
+                                                      throw new Exception("GOOGLE_CLIENT_SECRET is not set");
 
     public static string ConnectionString { get; } =
         $"Host=db;Port={DbPort};Database={PostgresDb};Username={PostgresUser};Password={PostgresPassword}";

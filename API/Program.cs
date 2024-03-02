@@ -13,13 +13,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API;
 
-public class Program
+public static class Program
 {
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
         var services = builder.Services;
-        var configuration = builder.Configuration;
 
         // Postgres identity db context
         services.AddDbContext<MoneyMinderDbContext>(options =>
@@ -43,11 +42,11 @@ public class Program
             });
 
         services.AddAuthentication()
-            // .AddGoogle(googleOptions =>
-            // {
-            //     googleOptions.ClientId = configuration["Authentication:Google:ClientId"];
-            //     googleOptions.ClientSecret = configuration["Authentication:Google:ClientSecret"];
-            // })
+            .AddGoogle(googleOptions =>
+            {
+                googleOptions.ClientId = DockerEnv.GoogleClientId;
+                googleOptions.ClientSecret = DockerEnv.GoogleClientSecret;
+            })
             ;
 
         services.AddAuthorization();

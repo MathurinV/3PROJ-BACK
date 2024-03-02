@@ -33,15 +33,15 @@ public sealed class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, G
         }
     }
 
-    public DbSet<Group> Groups { get; set; }
-    public DbSet<UserGroup> UserGroups { get; set; }
-    public DbSet<Message> Messages { get; set; }
-    public DbSet<GroupMessage> GroupMessages { get; set; }
-    public DbSet<Expense> Expenses { get; set; }
-    public DbSet<UserExpense> UserExpenses { get; set; }
-    public DbSet<Invitation> Invitations { get; set; }
+    public DbSet<Group> Groups { get; set; } = null!;
+    public DbSet<UserGroup> UserGroups { get; set; } = null!;
+    public DbSet<Message> Messages { get; set; } = null!;
+    public DbSet<GroupMessage> GroupMessages { get; set; } = null!;
+    public DbSet<Expense> Expenses { get; set; } = null!;
+    public DbSet<UserExpense> UserExpenses { get; set; } = null!;
+    public DbSet<Invitation> Invitations { get; set; } = null!;
 
-    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
+    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
