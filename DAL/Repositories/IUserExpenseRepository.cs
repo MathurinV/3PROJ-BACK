@@ -5,5 +5,5 @@ namespace DAL.Repositories;
 public interface IUserExpenseRepository
 {
     Task<ICollection<UserExpense?>> InsertManyAsync(ICollection<UserExpenseInsertDto> userExpenseInsertDto);
-    Task<bool> PayByUserId(Guid userId);
+    Task<bool> PayByUserIdAsync(Guid userId);
 }

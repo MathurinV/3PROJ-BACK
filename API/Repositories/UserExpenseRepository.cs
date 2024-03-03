@@ -15,7 +15,7 @@ public class UserExpenseRepository(MoneyMinderDbContext context) : IUserExpenseR
         return enumerable.Select(x => (UserExpense?)x).ToList();
     }
 
-    public async Task<bool> PayByUserId(Guid userId)
+    public async Task<bool> PayByUserIdAsync(Guid userId)
     {
         var user = await context.Users
             .Include(x => x.UserExpenses)
@@ -26,7 +26,11 @@ public class UserExpenseRepository(MoneyMinderDbContext context) : IUserExpenseR
         var enumerable = userExpenses as UserExpense[] ?? userExpenses.ToArray();
         var moneyDue = enumerable.Sum(ue => ue.Amount);
         if (user.Balance < moneyDue) return false;
-        foreach (var userExpense in enumerable) userExpense.PaidAt = DateTime.UtcNow;
+        foreach (var userExpense in enumerable)
+        {
+            var toBePaidValue = userExpense.Amount;
+            userExpense.PaidAt = DateTime.UtcNow;
+        };
 
         user.Balance -= moneyDue;
         await context.SaveChangesAsync();

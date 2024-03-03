@@ -23,13 +23,13 @@ services:
       RESHARPER_LOG_CONF: "/etc/opt/rider-debugger/backend-log.xml"
     image: "api:dev"
     ports:
-    - "127.0.0.1:57005:57100"
-    - "127.0.0.1:57205:57300"
+    - "127.0.0.1:57007:57100"
+    - "127.0.0.1:57207:57300"
     volumes:
     - "/home/papylols/.nuget/packages:/home/app/.nuget/packages"
     - "/home/papylols/Cs_Projects/3PROJ-BACK/API:/app:rw"
     - "/home/papylols/Cs_Projects/3PROJ-BACK:/src:rw"
     - "/home/papylols/.local/share/JetBrains/RiderRemoteDebugger/2023.3.3/Linux64:/opt/rider-debugger"
     - "/home/papylols/.local/share/JetBrains/Toolbox/apps/rider/bin:/etc/opt/rider-debugger/backend-log.xml"
-    - "/home/papylols/.cache/JetBrains/Rider2023.3/log/DebuggerWorker/JetBrains.Debugger.Worker.2024_3_02_13_10_41:/var/opt/rider-debugger:rw"
+    - "/home/papylols/.cache/JetBrains/Rider2023.3/log/DebuggerWorker/JetBrains.Debugger.Worker.2024_3_03_21_17_38:/var/opt/rider-debugger:rw"
     working_dir: "/app"

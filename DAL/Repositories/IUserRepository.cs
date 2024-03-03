@@ -8,7 +8,7 @@ public interface IUserRepository
     Task<AppUser?> InsertAsync(AppUserInsertDto appUserInsertDto);
     Task<SignInResult> SignInAsync(AppUserLoginDto appUserLoginDto);
     Task<bool> SignOutAsync();
-    Task<bool> AddToBalance(Guid userId, decimal amount);
+    Task<bool> AddToBalanceAsync(Guid userId, decimal amount);
     IQueryable<AppUser> GetAll();
     IQueryable<AppUser?> GetById(Guid id);
     IQueryable<AppUser?> GetByEmail(string email = null!);

@@ -43,7 +43,7 @@ public class UserMutations
         UserGroupInsertInput userGroupInsertInput)
     {
         var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (userId == null) return null;
+        if (userId == null) throw new Exception("User not found");
         var userGroupInsertDto = userGroupInsertInput.ToUserGroupInsertDto(Guid.Parse(userId));
         if (!await invitationRepository.DeleteAsync(userGroupInsertDto.GroupId, userGroupInsertDto.UserId))
             throw new Exception("Invitation not found");
@@ -54,9 +54,10 @@ public class UserMutations
     public async Task<bool> PayDues([FromServices] IUserExpenseRepository userExpenseRepository,
         [FromServices] IHttpContextAccessor httpContextAccessor)
     {
-        var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (userId == null) return false;
-        return await userExpenseRepository.PayByUserId(Guid.Parse(userId));
+        var userIdString = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userIdString == null) throw new Exception("User not found");
+        
+        return await userExpenseRepository.PayByUserIdAsync(Guid.Parse(userIdString));
     }
 
     [Authorize]
@@ -65,7 +66,7 @@ public class UserMutations
         decimal amount)
     {
         var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (userId == null) return false;
-        return await userRepository.AddToBalance(Guid.Parse(userId), amount);
+        if (userId == null) throw new Exception("User not found");
+        return await userRepository.AddToBalanceAsync(Guid.Parse(userId), amount);
     }
 }
