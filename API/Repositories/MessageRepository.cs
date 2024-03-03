@@ -1,6 +1,5 @@
 using DAL.Models.Messages;
 using DAL.Repositories;
-using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories;
 

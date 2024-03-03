@@ -73,10 +73,8 @@ public class GroupMutations
         var weightedUsers = expenseInsertInput.WeightedUsers.Select(x => x.Key);
         var currentGroup = await groupRepository.GetByIdAsync(expenseInsertInput.GroupId);
         if (currentGroup == null) throw new Exception("Group not found");
-        if (userGroupRepository.AreUsersInGroup(groupId: currentGroup.Id, userIds: weightedUsers).Result == false)
-        {
+        if (userGroupRepository.AreUsersInGroup(currentGroup.Id, weightedUsers).Result == false)
             throw new Exception("One or more users are not in the group");
-        }
 
         var totalWeight = expenseInsertInput.WeightedUsers.Sum(x => x.Value);
         var totalAmount = expenseInsertInput.Amount;
@@ -95,9 +93,7 @@ public class GroupMutations
         {
             // the creator is not a weighted user, we need to check if he is in the group
             if (userGroupRepository.IsUserInGroup(createdByGuidId, currentGroup.Id).Result == false)
-            {
                 throw new Exception("The creator is not in the group");
-            }
         }
 
         await using var transaction = await expenseRepository.BeginTransactionAsync();
@@ -115,7 +111,8 @@ public class GroupMutations
 
                 var amountDue = totalAmount * userWeight / totalWeight;
                 if (Math.Round(amountDue, 2) != amountDue)
-                    throw new Exception($"The amount due for user {userId} is not a multiple of 0.01 (got {amountDue})");
+                    throw new Exception(
+                        $"The amount due for user {userId} is not a multiple of 0.01 (got {amountDue})");
                 userExpenses.Add(new UserExpenseInsertDto
                 {
                     ExpenseId = expense.Id,

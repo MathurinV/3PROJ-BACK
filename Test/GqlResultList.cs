@@ -16,5 +16,5 @@ public class GqlResultList<T>
     }
 
     public IList<T> Data { get; set; }
-    public GraphQlError? GraphQlError { get; set; } = null!;
+    public GraphQlError? GraphQlError { get; set; }
 }

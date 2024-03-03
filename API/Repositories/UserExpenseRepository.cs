@@ -37,7 +37,7 @@ public class UserExpenseRepository(MoneyMinderDbContext context) : IUserExpenseR
         }
 
         user.Balance -= moneyDue;
-        
+
         await context.SaveChangesAsync();
         return result;
     }

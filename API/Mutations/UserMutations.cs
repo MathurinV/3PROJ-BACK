@@ -57,14 +57,12 @@ public class UserMutations
     {
         var userIdString = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (userIdString == null) throw new Exception("User not found");
-        
+
         var expenseCreatorsAmountsPairs = await userExpenseRepository.PayDuesByUserIdAsync(Guid.Parse(userIdString));
         if (expenseCreatorsAmountsPairs.Count == 0) return false;
         foreach (var (expenseCreatorId, amount) in expenseCreatorsAmountsPairs)
-        {
             await userRepository.AddToBalanceAsync(expenseCreatorId, amount);
-        }
-        
+
         return true;
     }
 

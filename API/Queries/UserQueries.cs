@@ -16,10 +16,11 @@ public class UserQueries
     {
         return userRepository.GetAll();
     }
-    
+
     [Authorize]
     [UseProjection]
-    public IQueryable<AppUser?> GetCurrentUser([Service] IUserRepository userRepository, [FromServices] IHttpContextAccessor httpContextAccessor)
+    public IQueryable<AppUser?> GetCurrentUser([Service] IUserRepository userRepository,
+        [FromServices] IHttpContextAccessor httpContextAccessor)
     {
         var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (userId == null) throw new Exception("Issue with getting user id");
