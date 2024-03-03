@@ -4,6 +4,11 @@ namespace DAL.Repositories;
 
 public interface IUserExpenseRepository
 {
+    /// <summary>
+    /// Inserts multiple user expenses into the database.
+    /// </summary>
+    /// <param name="userExpenseInsertDto">The collection of UserExpenseInsertDto objects representing the user expenses to be inserted.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the collection of inserted UserExpense objects.</returns>
     Task<ICollection<UserExpense?>> InsertManyAsync(ICollection<UserExpenseInsertDto> userExpenseInsertDto);
 
     /// <summary>
