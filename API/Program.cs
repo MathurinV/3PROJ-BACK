@@ -23,10 +23,12 @@ public static class Program
         // Cors
         services.AddCors(options =>
         {
-            options.AddPolicy("AllowVueApp", builder => builder
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-            );
+            options.AddPolicy("DefaultPolicy", configurePolicy =>
+                    configurePolicy
+                        .AllowAnyHeader()
+                        .WithMethods("GET", "POST")
+                        .WithOrigins("http://localhost:8080")
+                );
         });
 
         // Postgres identity db context
@@ -96,7 +98,7 @@ public static class Program
 
         var app = builder.Build();
 
-        app.UseCors("AllowVueApp");
+        app.UseCors("DefaultPolicy");
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment()) app.UseDeveloperExceptionPage();
