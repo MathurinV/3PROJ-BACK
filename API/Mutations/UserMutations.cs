@@ -35,6 +35,30 @@ public class UserMutations
         return await userRepository.SignOutAsync();
     }
 
+    /// <summary>
+    /// Deletes the user record from the database asynchronously.
+    /// </summary>
+    /// <param name="userRepository">The user repository.</param>
+    /// <param name="httpContextAccessor">The HTTP context accessor.</param>
+    /// <returns>
+    /// A Task that represents the asynchronous operation. The task will be completed with a boolean value indicating
+    /// whether the user record was successfully deleted (true) or not (false).
+    /// </returns>
+    /// <exception cref="Exception">Thrown when the user is not found.</exception>
+    /// <remarks>
+    ///The user must be authenticated to use this method. If the user is deleted, he is automatically signed out.
+    /// </remarks>
+    [Authorize]
+    public async Task<bool> DeleteSelf([FromServices] IUserRepository userRepository,
+        [FromServices] IHttpContextAccessor httpContextAccessor)
+    {
+        var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userId == null) throw new Exception("User not found");
+        var result = await userRepository.DeleteAsync(Guid.Parse(userId));
+        if (result) await userRepository.SignOutAsync();
+        return result;
+    }
+
     [Authorize]
     public async Task<UserGroup?> JoinGroup([FromServices] IUserGroupRepository userGroupRepository,
         [FromServices] IInvitationRepository invitationRepository,

@@ -20,6 +20,16 @@ public static class Program
         var builder = WebApplication.CreateBuilder(args);
         var services = builder.Services;
 
+        // Cors
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowVueApp", builder => builder
+                .WithOrigins("*")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials());
+        });
+        
         // Postgres identity db context
         services.AddDbContext<MoneyMinderDbContext>(options =>
         {
@@ -86,6 +96,8 @@ public static class Program
             .AddNpgSql(DockerEnv.ConnectionString);
 
         var app = builder.Build();
+
+        app.UseCors();
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment()) app.UseDeveloperExceptionPage();

@@ -42,6 +42,15 @@ public class UserRepository(
         return true;
     }
 
+    public Task<bool> DeleteAsync(Guid id)
+    {
+        var user = context.Users.Find(id);
+        if (user == null) return Task.FromResult(false);
+        context.Users.Remove(user);
+        if (context.SaveChanges() == 0) return Task.FromResult(false);
+        return Task.FromResult(true);
+    }
+
     public IQueryable<AppUser> GetAll()
     {
         return context.Users;

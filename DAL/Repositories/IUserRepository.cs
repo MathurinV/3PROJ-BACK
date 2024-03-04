@@ -37,6 +37,16 @@ public interface IUserRepository
     Task<bool> AddToBalanceAsync(Guid userId, decimal amount);
 
     /// <summary>
+    /// Deletes a user record from the database asynchronously.
+    /// </summary>
+    /// <param name="id">The ID of the user to be deleted.</param>
+    /// <returns>
+    /// A Task that represents the asynchronous operation. The task will be completed with a boolean value indicating
+    /// whether the user record was successfully deleted (true) or not (false).
+    /// </returns>
+    Task<bool> DeleteAsync(Guid id);
+
+    /// <summary>
     ///     Retrieves all users from the database.
     /// </summary>
     /// <returns>Returns an IQueryable of AppUser representing the collection of all users in the database.</returns>

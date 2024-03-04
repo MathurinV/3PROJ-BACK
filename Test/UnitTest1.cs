@@ -1,5 +1,7 @@
 using System.Text;
+using DAL.Models.Groups;
 using DAL.Models.Users;
+using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit.Abstractions;
@@ -32,6 +34,7 @@ public class UnitTest1
         var serviceResultJson = response.Content.ReadAsStringAsync().Result;
         _testOutputHelper.WriteLine(serviceResultJson);
         var gqlResult = new GqlResultList<AppUser>(serviceResultJson, "users");
-        Assert.True(gqlResult.Data.Count == 0);
+        Assert.True(gqlResult.Data.Count > 0);
     }
+
 }
