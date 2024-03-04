@@ -24,12 +24,11 @@ public static class Program
         services.AddCors(options =>
         {
             options.AddPolicy("AllowVueApp", builder => builder
-                .WithOrigins("*")
-                .AllowAnyHeader()
                 .AllowAnyMethod()
-                .AllowCredentials());
+                .AllowAnyHeader()
+            );
         });
-        
+
         // Postgres identity db context
         services.AddDbContext<MoneyMinderDbContext>(options =>
         {
@@ -97,7 +96,7 @@ public static class Program
 
         var app = builder.Build();
 
-        app.UseCors();
+        app.UseCors("AllowVueApp");
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment()) app.UseDeveloperExceptionPage();
