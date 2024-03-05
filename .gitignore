@@ -1,6 +1,6 @@
 bin/
 obj/
-#.idea/.idea.3PROJ-BACK/Docker/docker-compose.generated.override.yml
+.idea/.idea.3PROJ-BACK/Docker/docker-compose.generated.override.yml
 /packages/
 riderModule.iml
 /_ReSharper.Caches/
