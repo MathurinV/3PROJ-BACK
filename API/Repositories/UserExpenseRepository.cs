@@ -41,4 +41,32 @@ public class UserExpenseRepository(MoneyMinderDbContext context) : IUserExpenseR
         await context.SaveChangesAsync();
         return result;
     }
+
+    public async Task<ICollection<KeyValuePair<Guid, decimal>>> PayDuesByUserIdAndExpenseIdsAsync(Guid userId,
+        ICollection<Guid> expenseIds)
+    {
+        var user = await context.Users
+            .Include(x => x.UserExpenses)
+            .ThenInclude(x => x.Expense)
+            .ThenInclude(x => x.CreatedBy)
+            .FirstOrDefaultAsync(x => x.Id == userId);
+        if (user == null) throw new Exception("User not found");
+        var userExpenses = user.UserExpenses.Where(x => x.PaidAt == null && expenseIds.Contains(x.ExpenseId));
+        var enumerable = userExpenses as UserExpense[] ?? userExpenses.ToArray();
+        var moneyDue = enumerable.Sum(ue => ue.Amount);
+        if (user.Balance < moneyDue) return [];
+        List<KeyValuePair<Guid, decimal>> result = new();
+        foreach (var userExpense in enumerable)
+        {
+            var toBePaidValue = userExpense.Amount;
+            var expenseCreatorId = userExpense.Expense.CreatedBy.Id;
+            result.Add(new KeyValuePair<Guid, decimal>(expenseCreatorId, toBePaidValue));
+            userExpense.PaidAt = DateTime.UtcNow;
+        }
+
+        user.Balance -= moneyDue;
+
+        await context.SaveChangesAsync();
+        return result;
+    }
 }

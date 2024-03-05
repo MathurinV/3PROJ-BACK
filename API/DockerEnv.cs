@@ -23,6 +23,9 @@ public static class DockerEnv
     public static string GoogleClientSecret { get; } = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET") ??
                                                        throw new Exception("GOOGLE_CLIENT_SECRET is not set");
 
+    public static string ClientUrl { get; } = Environment.GetEnvironmentVariable("CLIENT_URL") ??
+                                              throw new Exception("CLIENT_URL is not set");
+
     public static string ConnectionString { get; } =
         $"Host=db;Port={DbPort};Database={PostgresDb};Username={PostgresUser};Password={PostgresPassword}";
 }

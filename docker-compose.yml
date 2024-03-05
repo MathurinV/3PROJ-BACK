@@ -14,11 +14,17 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       DB_PORT: ${DB_PORT}
+      
       # API
       API_ENDPOINT: ${API_ENDPOINT}
+      
       # GOOGLE_AUTHENTICATION
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      
+      # CLIENT
+      CLIENT_URL: ${CLIENT_URL}
+    
     networks:
       - default
       - local

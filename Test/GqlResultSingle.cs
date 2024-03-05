@@ -4,8 +4,6 @@ namespace Test;
 
 public class GqlResultSingle<T>
 {
-    public T Data { get; set; }
-    
     public GqlResultSingle(string json, string propertyName)
     {
         var jObject = JObject.Parse(json);
@@ -13,4 +11,6 @@ public class GqlResultSingle<T>
         var property = data[propertyName];
         Data = property.ToObject<T>();
     }
+
+    public T Data { get; set; }
 }

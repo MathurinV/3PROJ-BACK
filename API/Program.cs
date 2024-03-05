@@ -24,11 +24,11 @@ public static class Program
         services.AddCors(options =>
         {
             options.AddPolicy("DefaultPolicy", configurePolicy =>
-                    configurePolicy
-                        .AllowAnyHeader()
-                        .WithMethods("GET", "POST")
-                        .WithOrigins("http://localhost:8080")
-                );
+                configurePolicy
+                    .AllowAnyHeader()
+                    .WithMethods("GET", "POST")
+                    .WithOrigins(DockerEnv.ClientUrl)
+            );
         });
 
         // Postgres identity db context

@@ -42,13 +42,26 @@ public class UserRepository(
         return true;
     }
 
-    public Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> AddToBalancesAsync(ICollection<KeyValuePair<Guid, decimal>> userIdAmountPairs)
     {
-        var user = context.Users.Find(id);
-        if (user == null) return Task.FromResult(false);
+        foreach (var (userId, amount) in userIdAmountPairs)
+        {
+            var user = await context.Users.FindAsync(userId);
+            if (user == null) return false;
+            user.Balance += amount;
+        }
+
+        await context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> DeleteAsync(Guid id)
+    {
+        var user = await context.Users.FindAsync(id);
+        if (user == null) return false;
         context.Users.Remove(user);
-        if (context.SaveChanges() == 0) return Task.FromResult(false);
-        return Task.FromResult(true);
+        await context.SaveChangesAsync();
+        return true;
     }
 
     public IQueryable<AppUser> GetAll()

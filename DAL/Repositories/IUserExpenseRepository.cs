@@ -23,4 +23,14 @@ public interface IUserExpenseRepository
     /// <param name="userId">The ID of the user.</param>
     /// <returns>Returns a collection of key-value pairs representing the expense creator Ids and the amounts paid by the user.</returns>
     Task<ICollection<KeyValuePair<Guid, decimal>>> PayDuesByUserIdAsync(Guid userId);
+
+    /// <summary>
+    ///     Tries to pay the dues for the given user for the expenses with the specified IDs.
+    /// </summary>
+    /// <param name="userId">The ID of the user.</param>
+    /// <param name="expenseIds">The collection of expense IDs to be paid.</param>
+    /// <returns>Returns a collection of key-value pairs representing the expense creator Ids and the amounts paid by the user.</returns>
+    /// <remarks>This method is similar to <see cref="PayDuesByUserIdAsync" /> but it only pays for the specified expenses.</remarks>
+    Task<ICollection<KeyValuePair<Guid, decimal>>> PayDuesByUserIdAndExpenseIdsAsync(Guid userId,
+        ICollection<Guid> expenseIds);
 }

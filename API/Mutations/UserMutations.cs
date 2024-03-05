@@ -36,17 +36,17 @@ public class UserMutations
     }
 
     /// <summary>
-    /// Deletes the user record from the database asynchronously.
+    ///     Deletes the user record from the database asynchronously.
     /// </summary>
     /// <param name="userRepository">The user repository.</param>
     /// <param name="httpContextAccessor">The HTTP context accessor.</param>
     /// <returns>
-    /// A Task that represents the asynchronous operation. The task will be completed with a boolean value indicating
-    /// whether the user record was successfully deleted (true) or not (false).
+    ///     A Task that represents the asynchronous operation. The task will be completed with a boolean value indicating
+    ///     whether the user record was successfully deleted (true) or not (false).
     /// </returns>
     /// <exception cref="Exception">Thrown when the user is not found.</exception>
     /// <remarks>
-    ///The user must be authenticated to use this method. If the user is deleted, he is automatically signed out.
+    ///     The user must be authenticated to use this method. If the user is deleted, he is automatically signed out.
     /// </remarks>
     [Authorize]
     public async Task<bool> DeleteSelf([FromServices] IUserRepository userRepository,
@@ -84,9 +84,23 @@ public class UserMutations
 
         var expenseCreatorsAmountsPairs = await userExpenseRepository.PayDuesByUserIdAsync(Guid.Parse(userIdString));
         if (expenseCreatorsAmountsPairs.Count == 0) return false;
-        foreach (var (expenseCreatorId, amount) in expenseCreatorsAmountsPairs)
-            await userRepository.AddToBalanceAsync(expenseCreatorId, amount);
+        await userRepository.AddToBalancesAsync(expenseCreatorsAmountsPairs);
+        return true;
+    }
 
+    [Authorize]
+    public async Task<bool> PayDuesByExpenseId([FromServices] IUserExpenseRepository userExpenseRepository,
+        [FromServices] IUserRepository userRepository,
+        [FromServices] IHttpContextAccessor httpContextAccessor,
+        ICollection<Guid> expenseIds)
+    {
+        var userIdString = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userIdString == null) throw new Exception("User not found");
+
+        var expenseCreatorsAmountsPairs =
+            await userExpenseRepository.PayDuesByUserIdAndExpenseIdsAsync(Guid.Parse(userIdString), expenseIds);
+        if (expenseCreatorsAmountsPairs.Count == 0) return false;
+        await userRepository.AddToBalancesAsync(expenseCreatorsAmountsPairs);
         return true;
     }
 
