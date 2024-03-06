@@ -26,6 +26,7 @@ public static class Program
             options.AddPolicy("DefaultPolicy", configurePolicy =>
                 configurePolicy
                     .AllowAnyHeader()
+                    .AllowCredentials()
                     .WithMethods("GET", "POST")
                     .WithOrigins(DockerEnv.ClientUrl)
             );
