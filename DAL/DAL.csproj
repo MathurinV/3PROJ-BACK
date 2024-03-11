@@ -7,11 +7,15 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Files.EntityFrameworkCore.Extensions" Version="2.3.0" />
         <PackageReference Include="HotChocolate.Abstractions" Version="14.0.0-p.30"/>
         <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="8.0.1"/>
     </ItemGroup>
 
     <ItemGroup>
+        <Reference Include="Microsoft.AspNetCore.Http.Features">
+          <HintPath>..\..\..\.nuget\packages\microsoft.aspnetcore.app.ref\8.0.2\ref\net8.0\Microsoft.AspNetCore.Http.Features.dll</HintPath>
+        </Reference>
         <Reference Include="Microsoft.EntityFrameworkCore">
             <HintPath>..\..\..\.nuget\packages\microsoft.entityframeworkcore\8.0.1\lib\net8.0\Microsoft.EntityFrameworkCore.dll</HintPath>
         </Reference>

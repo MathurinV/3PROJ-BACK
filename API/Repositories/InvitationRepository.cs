@@ -16,7 +16,7 @@ public class InvitationRepository(MoneyMinderDbContext context) : IInvitationRep
     public async Task<bool> DeleteAsync(Guid groupId, Guid userId)
     {
         var invitation = await context.Invitations.FindAsync(userId, groupId);
-        if (invitation == null) return false;
+        if (invitation == null) throw new Exception("Invitation not found");
         context.Invitations.Remove(invitation);
         await context.SaveChangesAsync();
         return true;

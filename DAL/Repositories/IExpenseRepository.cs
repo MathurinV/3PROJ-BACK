@@ -20,4 +20,11 @@ public interface IExpenseRepository
     ///     started transaction.
     /// </returns>
     Task<IDbContextTransaction> BeginTransactionAsync();
+    
+    /// <summary>
+    ///     Gets the expense with the specified ID from the database asynchronously.
+    /// </summary>
+    /// <param name="id">The ID of the expense to get.</param>
+    /// <returns>The task object representing the asynchronous operation. The task result is the expense with the specified ID.</returns>
+    Task<Expense?> GetByIdAsync(Guid id);
 }

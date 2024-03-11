@@ -1,6 +1,7 @@
 using DAL.Models.Expenses;
 using DAL.Models.Groups;
 using DAL.Models.Invitations;
+using DAL.Models.Justifications;
 using DAL.Models.Messages;
 using DAL.Models.UserExpenses;
 using DAL.Models.UserGroups;
@@ -42,6 +43,8 @@ public sealed class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, G
     public DbSet<Invitation> Invitations { get; set; } = null!;
 
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
+    
+    public DbSet<Justification> Justifications { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -157,5 +160,6 @@ public sealed class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, G
             .WithMany(u => u.Invitations)
             .HasForeignKey(i => i.UserId)
             .OnDelete(DeleteBehavior.Restrict);
+        
     }
 }

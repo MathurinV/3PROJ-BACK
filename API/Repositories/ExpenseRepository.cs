@@ -18,4 +18,9 @@ public class ExpenseRepository(MoneyMinderDbContext context) : IExpenseRepositor
     {
         return context.Database.BeginTransactionAsync();
     }
+
+    public async Task<Expense?> GetByIdAsync(Guid id)
+    {
+        return await context.Expenses.FindAsync(id);
+    }
 }

@@ -14,16 +14,14 @@ public class UserGroupRepository(MoneyMinderDbContext context) : IUserGroupRepos
         return userGroup;
     }
 
-    public Task<bool> IsUserInGroup(Guid userId, Guid groupId)
+    public async Task<bool> IsUserInGroup(Guid userId, Guid groupId)
     {
-        return context.UserGroups.AnyAsync(x => x.GroupId == groupId && x.UserId == userId);
+        return await context.UserGroups.AnyAsync(x => x.GroupId == groupId && x.UserId == userId);
     }
 
-    public Task<bool> AreUsersInGroup(Guid groupId, IEnumerable<Guid> userIds)
+    public async Task<bool> AreUsersInGroup(Guid groupId, IEnumerable<Guid> userIds)
     {
-        return context.UserGroups
-            .Where(x => x.GroupId == groupId)
-            .Select(x => x.UserId)
-            .AllAsync(x => userIds.Contains(x));
+        var userGroups = await context.UserGroups.Where(x => x.GroupId == groupId).ToListAsync();
+        return userIds.All(userId => userGroups.Any(x => x.UserId == userId));
     }
 }
