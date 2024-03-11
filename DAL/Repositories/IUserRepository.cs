@@ -78,4 +78,6 @@ public interface IUserRepository
     /// <param name="email">The email of the AppUser to retrieve. Can't be null.</param>
     /// <returns>Returns an IQueryable of AppUser that matches the provided email.</returns>
     IQueryable<AppUser?> GetByEmail(string email = null!);
+
+    Task<AppUser?> GetByIdAsync(Guid userId);
 }

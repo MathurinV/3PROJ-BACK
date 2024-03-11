@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text;
 using DAL.Models.Expenses;
 using DAL.Models.Groups;
 using DAL.Models.Invitations;
@@ -70,11 +71,9 @@ public class GroupMutations
         var expenseInsertDto = expenseInsertInput.ToExpenseInsertDto(createdByGuidId);
 
         // Checks if all the weighted users are in the group
-        var weightedUsers = expenseInsertInput.WeightedUsers.Select(x => x.Key);
-        var currentGroup = await groupRepository.GetByIdAsync(expenseInsertInput.GroupId);
-        if (currentGroup == null) throw new Exception("Group not found");
-        if (userGroupRepository.AreUsersInGroup(currentGroup.Id, weightedUsers).Result == false)
-            throw new Exception("One or more users are not in the group");
+        if (await userGroupRepository.AreUsersInGroup(expenseInsertDto.GroupId,
+                expenseInsertDto.WeightedUsers.Select(x => x.Key)) == false)
+            throw new Exception("Not all the weighted users are in the group");
 
         var totalWeight = expenseInsertInput.WeightedUsers.Sum(x => x.Value);
         var totalAmount = expenseInsertInput.Amount;
@@ -92,7 +91,7 @@ public class GroupMutations
         else
         {
             // the creator is not a weighted user, we need to check if he is in the group
-            if (userGroupRepository.IsUserInGroup(createdByGuidId, currentGroup.Id).Result == false)
+            if (await userGroupRepository.IsUserInGroup(createdByGuidId, expenseInsertDto.GroupId) == false)
                 throw new Exception("The creator is not in the group");
         }
 
@@ -132,5 +131,28 @@ public class GroupMutations
             await transaction.RollbackAsync();
             throw;
         }
+    }
+
+    [Authorize]
+    public async Task<string> UploadExpenseJustification(Guid expenseId,
+        [FromServices] IExpenseRepository expenseRepository,
+        [FromServices] IUserRepository userRepository,
+        [FromServices] IHttpContextAccessor httpContextAccessor)
+    {
+        var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userId == null) throw new Exception("User not found");
+        var expense = await expenseRepository.GetByIdAsync(expenseId);
+        if (expense == null) throw new Exception("Expense not found");
+
+        var user = await userRepository.GetByIdAsync(Guid.Parse(userId));
+        if (user == null) throw new Exception("User not found");
+        if (expense.CreatedById != user.Id) throw new Exception("You are not the creator of this expense");
+        // TODO: Checks if the justification has already been uploaded
+
+        var baseUrl = $"http://localhost:{DockerEnv.ApiPort}";
+        var toBeHashedString = $"{expenseId.ToString()}--{DateTime.Now}";
+        var hashedExpenseId = Convert.ToBase64String(Encoding.UTF8.GetBytes(toBeHashedString));
+
+        return $"{baseUrl}/justifications/{hashedExpenseId}";
     }
 }

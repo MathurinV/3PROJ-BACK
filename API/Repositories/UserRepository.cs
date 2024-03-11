@@ -15,8 +15,8 @@ public class UserRepository(
         var appUser = appUserInsertDto.ToAppUser();
 
         var result = await userManager.CreateAsync(appUser, appUserInsertDto.Password);
-        if (!result.Succeeded) return null;
-        if (!await roleManager.RoleExistsAsync(appUserInsertDto.Role)) return null;
+        if (!result.Succeeded) throw new Exception("Error creating user");
+        if (!await roleManager.RoleExistsAsync(appUserInsertDto.Role)) throw new Exception("Role not found");
         await userManager.AddToRoleAsync(appUser, appUserInsertDto.Role);
         return appUser;
     }
@@ -36,7 +36,7 @@ public class UserRepository(
     public async Task<bool> AddToBalanceAsync(Guid userId, decimal amount)
     {
         var user = await context.Users.FindAsync(userId);
-        if (user == null) return false;
+        if (user == null) throw new Exception("User not found");
         user.Balance += amount;
         await context.SaveChangesAsync();
         return true;
@@ -47,7 +47,7 @@ public class UserRepository(
         foreach (var (userId, amount) in userIdAmountPairs)
         {
             var user = await context.Users.FindAsync(userId);
-            if (user == null) return false;
+            if (user == null) throw new Exception("User not found");
             user.Balance += amount;
         }
 
@@ -58,7 +58,7 @@ public class UserRepository(
     public async Task<bool> DeleteAsync(Guid id)
     {
         var user = await context.Users.FindAsync(id);
-        if (user == null) return false;
+        if (user == null) throw new Exception("User not found");
         context.Users.Remove(user);
         await context.SaveChangesAsync();
         return true;
@@ -77,5 +77,10 @@ public class UserRepository(
     public IQueryable<AppUser?> GetByEmail(string email = null!)
     {
         return context.Users.Where(u => u.Email == email);
+    }
+
+    public async Task<AppUser?> GetByIdAsync(Guid userId)
+    {
+        return await context.Users.FindAsync(userId);
     }
 }

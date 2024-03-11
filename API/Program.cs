@@ -91,11 +91,14 @@ public static class Program
             .AddScoped<IExpenseRepository, ExpenseRepository>()
             .AddScoped<IUserExpenseRepository, UserExpenseRepository>()
             .AddScoped<IInvitationRepository, InvitationRepository>()
+            .AddScoped<IJustificationRepository, JustificationRepository>()
             ;
 
         // Health checks
         services.AddHealthChecks()
             .AddNpgSql(DockerEnv.ConnectionString);
+
+        services.AddControllers();
 
         var app = builder.Build();
 
@@ -111,6 +114,7 @@ public static class Program
         app.UseAuthentication();
         app.UseAuthorization();
 
+        app.MapControllers();
         app.MapGraphQL(DockerEnv.ApiEndpoint);
         app.MapHealthChecks("/health")
             .RequireHost("localhost");

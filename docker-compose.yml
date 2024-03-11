@@ -17,6 +17,8 @@ services:
       
       # API
       API_ENDPOINT: ${API_ENDPOINT}
+      JWT_SECRET: ${JWT_SECRET}
+      API_PORT: ${API_PORT}
       
       # GOOGLE_AUTHENTICATION
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
@@ -37,6 +39,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+  
   db:
     image: postgres:alpine
     volumes:
@@ -52,6 +55,18 @@ services:
       - "${DB_PORT}:5432"
     healthcheck:
       test: [ "CMD", "pg_isready", "-U", "${POSTGRES_USER}" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+  
+  cache:
+    image: redis:alpine
+    networks:
+      - local
+    ports:
+      - "${CACHE_PORT}:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 30s
       timeout: 10s
       retries: 5

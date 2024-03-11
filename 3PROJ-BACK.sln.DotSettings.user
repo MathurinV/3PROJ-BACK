@@ -5,13 +5,5 @@
     &lt;TestId&gt;xUnit::A23C27CC-DE29-4014-8CB5-7672F1AE05C1::net8.0::Test.UnitTest1&lt;/TestId&gt;
   &lt;/TestAncestor&gt;
 &lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=e91ee4fb_002D8100_002D4368_002D8e1f_002D4d0c4527dcfb/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="UnitTest1 #3" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
-  &lt;TestAncestor&gt;
-    &lt;TestId&gt;xUnit::A23C27CC-DE29-4014-8CB5-7672F1AE05C1::net8.0::Test.UnitTest1&lt;/TestId&gt;
-  &lt;/TestAncestor&gt;
-&lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=eec67a27_002D648b_002D445f_002D8656_002D5c25da0f1eab/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="UnitTest1 #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
-  &lt;TestAncestor&gt;
-    &lt;TestId&gt;xUnit::A23C27CC-DE29-4014-8CB5-7672F1AE05C1::net8.0::Test.UnitTest1&lt;/TestId&gt;
-  &lt;/TestAncestor&gt;
-&lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>
+	
+	</wpf:ResourceDictionary>

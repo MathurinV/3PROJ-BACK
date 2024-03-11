@@ -18,7 +18,14 @@ public class UserMutations
         AppUserInsertDto appUserInsertDto)
     {
         AppUserInsertDtoHandling.ValidateAppUserInsertDto(userManager, appUserInsertDto);
-        return await userRepository.InsertAsync(appUserInsertDto);
+        var createdUser = await userRepository.InsertAsync(appUserInsertDto);
+        await userRepository.SignInAsync(new AppUserLoginDto
+        {
+            Password = appUserInsertDto.Password,
+            Username = appUserInsertDto.UserName,
+            RememberMe = false
+        });
+        return createdUser;
     }
 
     public async Task<SignInResult> SignIn([FromServices] IUserRepository userRepository,

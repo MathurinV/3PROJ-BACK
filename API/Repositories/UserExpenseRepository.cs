@@ -26,7 +26,7 @@ public class UserExpenseRepository(MoneyMinderDbContext context) : IUserExpenseR
         var userExpenses = user.UserExpenses.Where(x => x.PaidAt == null);
         var enumerable = userExpenses as UserExpense[] ?? userExpenses.ToArray();
         var moneyDue = enumerable.Sum(ue => ue.Amount);
-        if (user.Balance < moneyDue) return [];
+        if (user.Balance < moneyDue) throw new Exception("Insufficient funds");
         List<KeyValuePair<Guid, decimal>> result = new();
         foreach (var userExpense in enumerable)
         {
@@ -54,7 +54,7 @@ public class UserExpenseRepository(MoneyMinderDbContext context) : IUserExpenseR
         var userExpenses = user.UserExpenses.Where(x => x.PaidAt == null && expenseIds.Contains(x.ExpenseId));
         var enumerable = userExpenses as UserExpense[] ?? userExpenses.ToArray();
         var moneyDue = enumerable.Sum(ue => ue.Amount);
-        if (user.Balance < moneyDue) return [];
+        if (user.Balance < moneyDue) throw new Exception("Insufficient funds");
         List<KeyValuePair<Guid, decimal>> result = new();
         foreach (var userExpense in enumerable)
         {
