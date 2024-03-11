@@ -42,9 +42,9 @@ public sealed class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, G
     public DbSet<UserExpense> UserExpenses { get; set; } = null!;
     public DbSet<Invitation> Invitations { get; set; } = null!;
 
-    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
-    
     public DbSet<Justification> Justifications { get; set; } = null!;
+
+    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -160,6 +160,5 @@ public sealed class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, G
             .WithMany(u => u.Invitations)
             .HasForeignKey(i => i.UserId)
             .OnDelete(DeleteBehavior.Restrict);
-        
     }
 }

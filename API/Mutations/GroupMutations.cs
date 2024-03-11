@@ -5,10 +5,8 @@ using DAL.Models.Groups;
 using DAL.Models.Invitations;
 using DAL.Models.UserExpenses;
 using DAL.Models.UserGroups;
-using DAL.Models.Users;
 using DAL.Repositories;
 using HotChocolate.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -74,7 +72,7 @@ public class GroupMutations
 
         // Checks if all the weighted users are in the group
         if (await userGroupRepository.AreUsersInGroup(expenseInsertDto.GroupId,
-            expenseInsertDto.WeightedUsers.Select(x => x.Key)) == false)
+                expenseInsertDto.WeightedUsers.Select(x => x.Key)) == false)
             throw new Exception("Not all the weighted users are in the group");
 
         var totalWeight = expenseInsertInput.WeightedUsers.Sum(x => x.Value);
@@ -150,11 +148,11 @@ public class GroupMutations
         if (user == null) throw new Exception("User not found");
         if (expense.CreatedById != user.Id) throw new Exception("You are not the creator of this expense");
         // TODO: Checks if the justification has already been uploaded
-        
+
         var baseUrl = $"http://localhost:{DockerEnv.ApiPort}";
         var toBeHashedString = $"{expenseId.ToString()}--{DateTime.Now}";
         var hashedExpenseId = Convert.ToBase64String(Encoding.UTF8.GetBytes(toBeHashedString));
-        
+
         return $"{baseUrl}/justifications/{hashedExpenseId}";
     }
 }

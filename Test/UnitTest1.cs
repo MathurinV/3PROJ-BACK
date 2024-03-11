@@ -24,19 +24,19 @@ public class UnitTest1
         var usersIds = new List<Guid>();
         var users = new List<AppUserInsertDto>
         {
-            new AppUserInsertDto
+            new()
             {
                 UserName = "user1", Email = "user1@test.com", Password = "P@ssw0rd", Role = "User"
             },
-            new AppUserInsertDto()
+            new()
             {
                 UserName = "user2", Email = "user2@test.com", Password = "P@ssw0rd", Role = "User"
             },
-            new AppUserInsertDto()
+            new()
             {
                 UserName = "user3", Email = "user3@test.com", Password = "P@ssw0rd", Role = "User"
             },
-            new AppUserInsertDto()
+            new()
             {
                 UserName = "user4", Email = "user4@test.com", Password = "P@ssw0rd", Role = "User"
             }
@@ -116,7 +116,7 @@ public class UnitTest1
         Assert.NotNull(groupId);
 
         // invite other users to the group
-        for (int i = 1; i < 4; i++)
+        for (var i = 1; i < 4; i++)
         {
             var inviteUserMutation = @"
                 mutation{
@@ -139,14 +139,14 @@ public class UnitTest1
         }
 
         // for each invited user, login and accept the invitation
-        for (int i = 2; i < 5; i++)
+        for (var i = 2; i < 5; i++)
         {
             loginMutation = @"
                 mutation{
                     signIn(appUserLoginDto: {
                         password:""P@ssw0rd"",
                         rememberMe:false
-                        username:""user" + (i) + @"""
+                        username:""user" + i + @"""
                     }){
                         succeeded
                     }

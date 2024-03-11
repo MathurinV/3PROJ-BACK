@@ -39,7 +39,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-      
+  
   db:
     image: postgres:alpine
     volumes:
@@ -58,7 +58,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-      
+  
   cache:
     image: redis:alpine
     networks:

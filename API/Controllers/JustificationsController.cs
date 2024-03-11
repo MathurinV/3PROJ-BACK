@@ -4,7 +4,6 @@ using DAL.Models.Users;
 using DAL.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Path = System.IO.Path;
 
 namespace API.Controllers;
 
@@ -39,10 +38,7 @@ public class JustificationsController : ControllerBase
 
         // Check if the expense exists
         var expense = await expenseRepository.GetByIdAsync(expenseId);
-        if (expense == null)
-        {
-            return NotFound($"Expense with ID {expenseId} not found");
-        }
+        if (expense == null) return NotFound($"Expense with ID {expenseId} not found");
 
         await justificationRepository.SaveJustificationAsync(expenseId, file);
 
@@ -51,7 +47,7 @@ public class JustificationsController : ControllerBase
                $", dateTime = {dateTime.ToString(CultureInfo.InvariantCulture)}" +
                $", file = {file.FileName}";
     }
-    
+
     [HttpGet("{expenseId}")]
     public async Task<IActionResult> GetJustification(Guid expenseId,
         [FromServices] IExpenseRepository expenseRepository,
@@ -59,17 +55,11 @@ public class JustificationsController : ControllerBase
     {
         // Check if the expense exists
         var expense = await expenseRepository.GetByIdAsync(expenseId);
-        if (expense == null)
-        {
-            return NotFound($"Expense with ID {expenseId} not found");
-        }
+        if (expense == null) return NotFound($"Expense with ID {expenseId} not found");
 
         // Get the justification file
         var justification = await justificationRepository.GetJustificationAsync(expenseId);
-        if (justification == null)
-        {
-            return NotFound($"Justification for expense with ID {expenseId} not found");
-        }
+        if (justification == null) return NotFound($"Justification for expense with ID {expenseId} not found");
 
         // Return the file
         return File(justification.Data, justification.MimeType, justification.Name);

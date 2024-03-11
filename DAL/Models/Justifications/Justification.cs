@@ -1,4 +1,3 @@
-using DAL.Models.Expenses;
 using Files.EntityFrameworkCore.Extensions;
 
 namespace DAL.Models.Justifications;
