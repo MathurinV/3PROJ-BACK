@@ -32,6 +32,8 @@ public static class Program
             );
         });
 
+        services.AddHttpContextAccessor();
+
         // Postgres identity db context
         services.AddDbContext<MoneyMinderDbContext>(options =>
         {
