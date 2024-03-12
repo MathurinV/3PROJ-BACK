@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using System.Text;
 using DAL.Models.Expenses;
 using DAL.Models.Groups;
 using DAL.Models.Invitations;
@@ -9,6 +8,7 @@ using DAL.Repositories;
 using HotChocolate.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace API.Mutations;
 
@@ -137,24 +137,25 @@ public class GroupMutations
     public async Task<string> UploadExpenseJustification(Guid expenseId,
         [FromServices] IExpenseRepository expenseRepository,
         [FromServices] IUserRepository userRepository,
-        [FromServices] IJustificationRepository justificationRepository,
-        [FromServices] IHttpContextAccessor httpContextAccessor)
+        [FromServices] IHttpContextAccessor httpContextAccessor,
+        [FromServices] IDistributedCache distributedCache)
     {
         var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (userId == null) throw new Exception("User not found");
         var expense = await expenseRepository.GetByIdAsync(expenseId);
         if (expense == null) throw new Exception("Expense not found");
-        var justification = await justificationRepository.GetJustificationAsync(expenseId);
-        if (justification != null) throw new Exception("Justification has already been uploaded");
 
         var user = await userRepository.GetByIdAsync(Guid.Parse(userId));
         if (user == null) throw new Exception("User not found");
         if (expense.CreatedById != user.Id) throw new Exception("You are not the creator of this expense");
 
+        var token = Guid.NewGuid().ToString();
+        await distributedCache.SetStringAsync(token, expenseId.ToString(), new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+        });
         var baseUrl = $"http://localhost:{DockerEnv.ApiPort}";
-        var toBeHashedString = $"{expenseId.ToString()}--{DateTime.Now}";
-        var hashedExpenseId = Convert.ToBase64String(Encoding.UTF8.GetBytes(toBeHashedString));
 
-        return $"{baseUrl}/justifications/{hashedExpenseId}";
+        return $"{baseUrl}/justifications/{token}";
     }
 }

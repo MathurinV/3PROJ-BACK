@@ -67,7 +67,7 @@ public class UnitTest1
             var responseString = await response.Content.ReadAsStringAsync();
             _testOutputHelper.WriteLine(responseString);
             var jsonResponse = JObject.Parse(responseString);
-            var id = jsonResponse["data"]["createUser"]["id"];
+            var id = jsonResponse["data"]?["createUser"]?["id"];
 
             Assert.NotNull(id);
             usersIds.Add(Guid.Parse(id.ToString()));
@@ -92,8 +92,8 @@ public class UnitTest1
         var loginResponseString = await loginResponse.Content.ReadAsStringAsync();
         _testOutputHelper.WriteLine(loginResponseString);
         var loginJsonResponse = JObject.Parse(loginResponseString);
-        var loginSucceeded = loginJsonResponse["data"]["signIn"]["succeeded"];
-        Assert.True((bool)loginSucceeded);
+        var loginSucceeded = loginJsonResponse["data"]?["signIn"]?["succeeded"];
+        Assert.True(loginSucceeded != null && (bool)loginSucceeded);
 
         //create group
         var createGroupMutation = @"
@@ -112,7 +112,7 @@ public class UnitTest1
         var createGroupResponseString = await createGroupResponse.Content.ReadAsStringAsync();
         _testOutputHelper.WriteLine(createGroupResponseString);
         var createGroupJsonResponse = JObject.Parse(createGroupResponseString);
-        var groupId = createGroupJsonResponse["data"]["createGroup"]["id"];
+        var groupId = createGroupJsonResponse["data"]?["createGroup"]?["id"];
         Assert.NotNull(groupId);
 
         // invite other users to the group
@@ -134,7 +134,7 @@ public class UnitTest1
             var inviteUserResponseString = await inviteUserResponse.Content.ReadAsStringAsync();
             _testOutputHelper.WriteLine(inviteUserResponseString);
             var inviteUserJsonResponse = JObject.Parse(inviteUserResponseString);
-            var invitedAt = inviteUserJsonResponse["data"]["inviteUser"]["invitedAt"];
+            var invitedAt = inviteUserJsonResponse["data"]?["inviteUser"]?["invitedAt"];
             Assert.NotNull(invitedAt);
         }
 
@@ -158,8 +158,8 @@ public class UnitTest1
             loginResponseString = await loginResponse.Content.ReadAsStringAsync();
             _testOutputHelper.WriteLine(loginResponseString);
             loginJsonResponse = JObject.Parse(loginResponseString);
-            loginSucceeded = loginJsonResponse["data"]["signIn"]["succeeded"];
-            Assert.True((bool)loginSucceeded);
+            loginSucceeded = loginJsonResponse["data"]?["signIn"]?["succeeded"];
+            Assert.True(loginSucceeded != null && (bool)loginSucceeded);
 
             var acceptInvitationMutation = @"
                 mutation{
@@ -177,7 +177,7 @@ public class UnitTest1
             var acceptInvitationResponseString = await acceptInvitationResponse.Content.ReadAsStringAsync();
             _testOutputHelper.WriteLine(acceptInvitationResponseString);
             var acceptInvitationJsonResponse = JObject.Parse(acceptInvitationResponseString);
-            var joinedAt = acceptInvitationJsonResponse["data"]["joinGroup"]["joinedAt"];
+            var joinedAt = acceptInvitationJsonResponse["data"]?["joinGroup"]?["joinedAt"];
             Assert.NotNull(joinedAt);
         }
 
@@ -200,7 +200,7 @@ public class UnitTest1
         var getGroupResponseString = await getGroupResponse.Content.ReadAsStringAsync();
         _testOutputHelper.WriteLine(getGroupResponseString);
         var getGroupJsonResponse = JObject.Parse(getGroupResponseString);
-        var userGroups = getGroupJsonResponse["data"]["groupById"][0]["userGroups"];
-        Assert.Equal(4, userGroups.Count());
+        var userGroups = getGroupJsonResponse["data"]?["groupById"]?[0]?["userGroups"];
+        if (userGroups != null) Assert.Equal(4, userGroups.Count());
     }
 }

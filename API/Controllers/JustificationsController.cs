@@ -1,9 +1,7 @@
-using System.Globalization;
-using System.Text;
-using DAL.Models.Users;
 using DAL.Repositories;
-using Microsoft.AspNetCore.Identity;
+using FluentFTP;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace API.Controllers;
 
@@ -11,57 +9,52 @@ namespace API.Controllers;
 [Route("[controller]")]
 public class JustificationsController : ControllerBase
 {
-    private readonly UserManager<AppUser> _userManager;
-
-    public JustificationsController(UserManager<AppUser> userManager)
-    {
-        _userManager = userManager;
-    }
-
-    [HttpGet]
-    public ActionResult<string> GetJustifications()
-    {
-        return "GET request to /api/justifications";
-    }
-
-    [HttpPost("{hashedExpenseId}")]
-    public async Task<ActionResult<string>> PostJustifications(string hashedExpenseId,
+    [HttpPost("{token}")]
+    public async Task<ActionResult<FtpStatus>> PostJustifications(string token,
         [FromForm] IFormFile file,
-        [FromServices] IJustificationRepository justificationRepository,
-        [FromServices] IExpenseRepository expenseRepository) // Inject the expense repository
+        [FromServices] IDistributedCache distributedCache,
+        [FromServices] IExpenseRepository expenseRepository)
     {
-        var decodedExpenseId = Encoding.UTF8.GetString(Convert.FromBase64String(hashedExpenseId));
+        var expenseIdString = await distributedCache.GetStringAsync(token);
+        if (expenseIdString == null) return BadRequest("Invalid token");
 
-        var parts = decodedExpenseId.Split("--");
-        var expenseId = Guid.Parse(parts[0]);
-        var dateTime = DateTime.Parse(parts[1]);
+        var expenseId = Guid.Parse(expenseIdString);
 
-        // Check if the expense exists
         var expense = await expenseRepository.GetByIdAsync(expenseId);
         if (expense == null) return NotFound($"Expense with ID {expenseId} not found");
 
-        await justificationRepository.SaveJustificationAsync(expenseId, file);
+        var ftpCLient = new AsyncFtpClient("ftp", DockerEnv.FtpUser, DockerEnv.FtpPassword);
+        await ftpCLient.AutoConnect();
 
-        return "POST request to /api/justifications" +
-               $", expenseId = {expenseId.ToString()}" +
-               $", dateTime = {dateTime.ToString(CultureInfo.InvariantCulture)}" +
-               $", file = {file.FileName}";
+        var stream = file.OpenReadStream();
+        var status = await ftpCLient.UploadStream(stream, $"/justifications/{expenseId}", FtpRemoteExists.Overwrite, createRemoteDir:true);
+
+        await ftpCLient.Disconnect();
+        return Ok(status);
     }
 
-    [HttpGet("{expenseId}")]
-    public async Task<IActionResult> GetJustification(Guid expenseId,
+    [HttpGet("{token}")]
+    public async Task<IActionResult> GetJustification(string token,
         [FromServices] IExpenseRepository expenseRepository,
-        [FromServices] IJustificationRepository justificationRepository)
+        [FromServices] IDistributedCache distributedCache)
     {
-        // Check if the expense exists
+        var expenseIdString = await distributedCache.GetStringAsync(token);
+        if (expenseIdString == null) return BadRequest("Invalid token");
+
+        var expenseId = Guid.Parse(expenseIdString);
+
         var expense = await expenseRepository.GetByIdAsync(expenseId);
         if (expense == null) return NotFound($"Expense with ID {expenseId} not found");
 
-        // Get the justification file
-        var justification = await justificationRepository.GetJustificationAsync(expenseId);
-        if (justification == null) return NotFound($"Justification for expense with ID {expenseId} not found");
+        var ftpCLient = new AsyncFtpClient("ftp", DockerEnv.FtpUser, DockerEnv.FtpPassword);
+        await ftpCLient.AutoConnect();
 
-        // Return the file
-        return File(justification.Data, justification.MimeType, justification.Name);
+        var stream = new MemoryStream();
+        var status = await ftpCLient.DownloadStream(stream, $"/justifications/{expenseId}");
+        await ftpCLient.Disconnect();
+        if (!status) return NotFound("Justification not found");
+        stream.Position = 0;
+
+        return File(stream, "application/octet-stream");
     }
 }

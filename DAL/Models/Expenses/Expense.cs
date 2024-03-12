@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using DAL.Models.Groups;
-using DAL.Models.Justifications;
 using DAL.Models.UserExpenses;
 using DAL.Models.Users;
 using HotChocolate;
@@ -18,5 +17,4 @@ public class Expense
     [GraphQLIgnore] public Guid CreatedById { get; set; }
     public AppUser CreatedBy { get; set; } = null!;
     public ICollection<UserExpense> UserExpenses { get; set; } = new List<UserExpense>();
-    [GraphQLIgnore] public Justification? Justification { get; set; } = null!;
 }

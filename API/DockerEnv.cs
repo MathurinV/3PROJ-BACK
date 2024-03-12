@@ -26,11 +26,14 @@ public static class DockerEnv
     public static string ClientUrl { get; } = Environment.GetEnvironmentVariable("CLIENT_URL") ??
                                               throw new Exception("CLIENT_URL is not set");
 
-    public static string JwtSecret { get; } = Environment.GetEnvironmentVariable("JWT_SECRET") ??
-                                              throw new Exception("JWT_SECRET is not set");
-
     public static string ApiPort { get; } = Environment.GetEnvironmentVariable("API_PORT") ??
                                             throw new Exception("API_PORT is not set");
+
+    public static string FtpUser { get; } = Environment.GetEnvironmentVariable("FTP_USER") ??
+                                            throw new Exception("FTP_USER is not set");
+
+    public static string FtpPassword { get; } = Environment.GetEnvironmentVariable("FTP_PASS") ??
+                                                throw new Exception("FTP_PASS is not set");
 
     public static string ConnectionString { get; } =
         $"Host=db;Port={DbPort};Database={PostgresDb};Username={PostgresUser};Password={PostgresPassword}";

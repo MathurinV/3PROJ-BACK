@@ -34,6 +34,8 @@ public static class Program
 
         services.AddHttpContextAccessor();
 
+        services.AddStackExchangeRedisCache(options => { options.Configuration = "cache:6379"; });
+
         // Postgres identity db context
         services.AddDbContext<MoneyMinderDbContext>(options =>
         {
@@ -93,7 +95,6 @@ public static class Program
             .AddScoped<IExpenseRepository, ExpenseRepository>()
             .AddScoped<IUserExpenseRepository, UserExpenseRepository>()
             .AddScoped<IInvitationRepository, InvitationRepository>()
-            .AddScoped<IJustificationRepository, JustificationRepository>()
             ;
 
         // Health checks

@@ -24,6 +24,11 @@ services:
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       
+      # FTP
+      FTP_USER: ${FTP_USER}
+      FTP_PASS: ${FTP_PASS}
+      PASV_ADDRESS: ${PASV_ADDRESS}
+      
       # CLIENT
       CLIENT_URL: ${CLIENT_URL}
     
@@ -65,8 +70,31 @@ services:
       - local
     ports:
       - "${CACHE_PORT}:6379"
+    restart: always
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 30s
       timeout: 10s
       retries: 5
+  
+  ftp:
+    image: fauria/vsftpd
+    ports:
+      - "20:20"
+      - "21:21"
+      - "21100-21110:21100-21110"
+    environment:
+      FTP_USER: ${FTP_USER}
+      FTP_PASS: ${FTP_PASS}
+      PASV_ADDRESS: ${PASV_ADDRESS}
+      PASV_MIN_PORT: 21100
+      PASV_MAX_PORT: 21110
+    volumes:
+      - ftpdata:/home/vsftpd
+    networks:
+      - local
+    restart: always
+    
+
+volumes:
+  ftpdata:
