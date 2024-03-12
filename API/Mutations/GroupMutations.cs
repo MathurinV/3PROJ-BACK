@@ -137,17 +137,19 @@ public class GroupMutations
     public async Task<string> UploadExpenseJustification(Guid expenseId,
         [FromServices] IExpenseRepository expenseRepository,
         [FromServices] IUserRepository userRepository,
+        [FromServices] IJustificationRepository justificationRepository,
         [FromServices] IHttpContextAccessor httpContextAccessor)
     {
         var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (userId == null) throw new Exception("User not found");
         var expense = await expenseRepository.GetByIdAsync(expenseId);
         if (expense == null) throw new Exception("Expense not found");
+        var justification = await justificationRepository.GetJustificationAsync(expenseId);
+        if (justification != null) throw new Exception("Justification has already been uploaded");
 
         var user = await userRepository.GetByIdAsync(Guid.Parse(userId));
         if (user == null) throw new Exception("User not found");
         if (expense.CreatedById != user.Id) throw new Exception("You are not the creator of this expense");
-        // TODO: Checks if the justification has already been uploaded
 
         var baseUrl = $"http://localhost:{DockerEnv.ApiPort}";
         var toBeHashedString = $"{expenseId.ToString()}--{DateTime.Now}";

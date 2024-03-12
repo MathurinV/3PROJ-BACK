@@ -33,7 +33,10 @@ public class UserMutations
         AppUserLoginDto appUserLoginDto)
     {
         AppUserLoginDtoHandling.ValidateAppUserLoginDto(userManager, appUserLoginDto);
-        return await userRepository.SignInAsync(appUserLoginDto);
+        var signInResult = await userRepository.SignInAsync(appUserLoginDto);
+        if (signInResult.Succeeded == false) throw new Exception("Wrong username or password");
+
+        return signInResult;
     }
 
     [Authorize]
