@@ -5,6 +5,7 @@ using DAL.Models.Invitations;
 using DAL.Models.UserExpenses;
 using DAL.Models.UserGroups;
 using DAL.Repositories;
+using FluentFTP;
 using HotChocolate.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -156,6 +157,42 @@ public class GroupMutations
         });
         var baseUrl = $"http://localhost:{DockerEnv.ApiPort}";
 
+        return $"{baseUrl}/justifications/{token}";
+    }
+    
+    [Authorize]
+    public async Task<string> GetExpenseJustification(Guid expenseId,
+        [FromServices] IHttpContextAccessor httpContextAccessor,
+        [FromServices] IUserRepository userRepository,
+        [FromServices] IExpenseRepository expenseRepository,
+        [FromServices] IDistributedCache distributedCache,
+        [FromServices] IUserGroupRepository userGroupRepository)
+    {
+        var userIdString = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userIdString == null) throw new Exception("User not found");
+        var userId = Guid.Parse(userIdString);
+        
+        var expense = await expenseRepository.GetByIdAsync(expenseId);
+        if (expense == null) throw new Exception("Expense not found");
+
+        var user = await userRepository.GetByIdAsync(userId);
+        if (user == null) throw new Exception("User not found");
+
+        var isUserInGroup = await userGroupRepository.IsUserInGroup(userId, expense.GroupId);
+        if (!isUserInGroup) throw new Exception("You are not in the group of this expense");
+
+        var ftpCLient = new AsyncFtpClient("ftp", DockerEnv.FtpJustificationsUser, DockerEnv.FtpJustificationsPassword);
+        await ftpCLient.AutoConnect();
+        if (!await ftpCLient.FileExists($"{expenseId}.*")) throw new Exception("Justification not found");
+        await ftpCLient.Disconnect();
+
+        var token = Guid.NewGuid().ToString();
+        await distributedCache.SetStringAsync(token, expenseId.ToString(), new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+        });
+
+        var baseUrl = $"http://localhost:{DockerEnv.ApiPort}";
         return $"{baseUrl}/justifications/{token}";
     }
 }

@@ -202,5 +202,34 @@ public class UnitTest1
         var getGroupJsonResponse = JObject.Parse(getGroupResponseString);
         var userGroups = getGroupJsonResponse["data"]?["groupById"]?[0]?["userGroups"];
         if (userGroups != null) Assert.Equal(4, userGroups.Count());
+
+        // creates a new expense
+        var createExpenseMutation = @"
+            mutation{
+                addUserExpenses(expenseInsertInput: {
+                    amount:100
+                    description:""test expense""
+                    groupId:""" + groupId + @"""
+                    weightedUsers:[
+                        {
+                            key:""" + usersIds[1] + @""",
+                            value:1
+                        }
+                    ]
+                }){
+                    paidAt
+                }
+            }";
+        var createExpenseMutationObject = new { query = createExpenseMutation };
+        var serializedCreateExpenseMutation = JsonConvert.SerializeObject(createExpenseMutationObject);
+        var createExpenseContent =
+            new StringContent(serializedCreateExpenseMutation, Encoding.UTF8, "application/json");
+        var createExpenseResponse = await _client.PostAsync(GraphQlUrl, createExpenseContent);
+        var createExpenseResponseString = await createExpenseResponse.Content.ReadAsStringAsync();
+        _testOutputHelper.WriteLine(createExpenseResponseString);
+        var createExpenseJsonResponse = JObject.Parse(createExpenseResponseString);
+        var paidAt = createExpenseJsonResponse["data"]?["addUserExpenses"]?[0];
+        _testOutputHelper.WriteLine(paidAt?.ToString());
+        Assert.NotNull(paidAt);
     }
 }

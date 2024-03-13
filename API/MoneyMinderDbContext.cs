@@ -6,6 +6,7 @@ using DAL.Models.UserExpenses;
 using DAL.Models.UserGroups;
 using DAL.Models.Users;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -47,6 +48,15 @@ public sealed class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, G
     {
         base.OnModelCreating(builder);
 
+        // Change the name of the identity tables
+        builder.Entity<AppUser>().ToTable("Users");
+        builder.Entity<AppRole>().ToTable("Roles");
+        builder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles");
+        builder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaims");
+        builder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogins");
+        builder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims");
+        builder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens");
+        
         builder.Entity<AppUser>().HasIndex(u => u.Email).IsUnique();
         builder.Entity<AppUser>().HasIndex(u => u.UserName).IsUnique();
 
