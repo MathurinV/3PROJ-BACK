@@ -23,4 +23,14 @@ public class ExpenseRepository(MoneyMinderDbContext context) : IExpenseRepositor
     {
         return await context.Expenses.FindAsync(id);
     }
+
+    public async Task<bool> ChangeExpenseJustificationExtensionAsync(Guid expenseId,
+        JustificationFileTypes.ValidJustificationExtensions? newExtension)
+    {
+        var expense = await context.Expenses.FindAsync(expenseId);
+        if (expense == null) return false;
+        expense.JustificationExtension = newExtension;
+        await context.SaveChangesAsync();
+        return true;
+    }
 }

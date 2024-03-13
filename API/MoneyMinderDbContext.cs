@@ -56,7 +56,7 @@ public sealed class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, G
         builder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogins");
         builder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims");
         builder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens");
-        
+
         builder.Entity<AppUser>().HasIndex(u => u.Email).IsUnique();
         builder.Entity<AppUser>().HasIndex(u => u.UserName).IsUnique();
 
@@ -73,6 +73,10 @@ public sealed class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, G
         builder.Entity<Expense>()
             .Property(e => e.CreatedAt)
             .HasDefaultValueSql("NOW()");
+
+        builder.Entity<Expense>()
+            .Property(e => e.JustificationExtension)
+            .HasDefaultValue(null);
 
         builder.Entity<Invitation>()
             .Property(i => i.InvitedAt)

@@ -79,6 +79,7 @@ public static class Program
             .AddTypeExtension<UserMutations>()
             .AddTypeExtension<GroupMutations>()
             .AddTypeExtension<MessageMutations>()
+            .AddTypeExtension<ExpenseMutations>()
             .AddType<AppUserType>()
             .AddFiltering()
             .AddSorting()
