@@ -3,9 +3,11 @@ using API.ErrorsHandling.UsersHandling;
 using DAL.Models.UserGroups;
 using DAL.Models.Users;
 using DAL.Repositories;
+using FluentFTP;
 using HotChocolate.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
 namespace API.Mutations;
@@ -129,6 +131,47 @@ public class UserMutations
         if (expenseCreatorsAmountsPairs.Count == 0) return false;
         await userRepository.AddToBalancesAsync(expenseCreatorsAmountsPairs);
         return true;
+    }
+
+    [Authorize]
+    public async Task<string> UploadProfilePicture([FromServices] IUserRepository userRepository,
+        [FromServices] IHttpContextAccessor httpContextAccessor,
+        [FromServices] IDistributedCache distributedCache)
+    {
+        var userIdString = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userIdString == null) throw new Exception("User not found");
+        var userId = Guid.Parse(userIdString);
+
+        var token = Guid.NewGuid().ToString();
+        await distributedCache.SetStringAsync(token, userIdString, new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+        });
+        var baseUrl = $"http://localhost:{DockerEnv.ApiPort}";
+
+        return $"{baseUrl}/avatars/{token}";
+    }
+
+    [Authorize]
+    public async Task<string> GetAvatar(Guid userId,
+        [FromServices] IHttpContextAccessor httpContextAccessor,
+        [FromServices] IUserRepository userRepository)
+    {
+        var userIdString = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userIdString == null) throw new Exception("User not found");
+
+        var user = await userRepository.GetByIdAsync(userId);
+        if (user == null) throw new Exception("User not found");
+
+        var fileExtension = AvatarFileTypes.ValidAvatarExtensionToString(user.AvatarExtension);
+
+        var ftpClient = new AsyncFtpClient("ftp", DockerEnv.FtpAvatarsUser, DockerEnv.FtpAvatarsPassword);
+        await ftpClient.AutoConnect();
+        if (!await ftpClient.FileExists($"{userIdString}{fileExtension}")) throw new Exception("Avatar not found");
+        await ftpClient.Disconnect();
+        
+        var baseUrl = $"http://localhost:{DockerEnv.ApiPort}";
+        return $"{baseUrl}/avatars/{userIdString}{fileExtension}";
     }
 
     [Authorize]

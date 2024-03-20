@@ -6,6 +6,7 @@ using FluentFTP;
 using HotChocolate.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.IdentityModel.Tokens;
 
 namespace API.Mutations;
 
@@ -13,10 +14,85 @@ namespace API.Mutations;
 public class ExpenseMutations
 {
     [Authorize]
+    public async Task<ICollection<UserExpense?>> AddUserExpensesDefaultWeights(
+        [FromServices] IUserExpenseRepository userExpenseRepository,
+        [FromServices] IExpenseRepository expenseRepository,
+        [FromServices] IUserGroupRepository userGroupRepository,
+        [FromServices] IHttpContextAccessor httpContextAccessor,
+        ExpenseInsertInputDefault expenseInsertInputDefault)
+    {
+        var createdByIdString = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (createdByIdString == null) throw new Exception("User not found");
+
+        var createdById = Guid.Parse(createdByIdString);
+        var expenseInsertDto = expenseInsertInputDefault.ToExpenseInsertDto(createdById);
+
+        if (await userGroupRepository.AreUsersInGroup(expenseInsertDto.GroupId,
+                expenseInsertDto.WeightedUsers.Select(x => x.Key)) == false)
+            throw new Exception("Not all the weighted users are in the group");
+
+        var totalWeight = expenseInsertDto.WeightedUsers.Count;
+        var totalAmount = expenseInsertInputDefault.Amount;
+
+        var creatorWeightedUser = expenseInsertDto.WeightedUsers.FirstOrDefault(x => x.Key == createdById);
+        if (creatorWeightedUser.Key != default)
+        {
+            // The creator is also a weighted user, we need to remove him from the weighted users and adjust the total amount
+            // In this case, the creator has been checked to be in the group
+            totalAmount -= expenseInsertDto.Amount * creatorWeightedUser.Value / totalWeight;
+            totalWeight -= 1;
+            expenseInsertDto.WeightedUsers.Remove(creatorWeightedUser);
+        }
+        else
+        {
+            // the creator is not a weighted user, we need to check if he is in the group
+            if (await userGroupRepository.IsUserInGroup(createdById, expenseInsertDto.GroupId) == false)
+                throw new Exception("The creator is not in the group");
+        }
+
+        await using var transaction = await expenseRepository.BeginTransactionAsync();
+        try
+        {
+            var userExpenses = new List<UserExpenseInsertDto>();
+            var amountDue = totalAmount / totalWeight;
+            amountDue = Math.Round(amountDue, 2);
+            totalAmount = amountDue * totalWeight;
+            
+            expenseInsertDto.Amount = totalAmount;
+
+            var expense = await expenseRepository.InsertAsync(expenseInsertDto);
+            if (expense == null) throw new Exception("Failed to insert expense");
+            
+            foreach (var (userId, userWeight) in expenseInsertDto.WeightedUsers)
+            {
+                // If the creator is also a weighted user, we don't want to add an expense for him
+                if (userId == createdById) continue;
+
+                userExpenses.Add(new UserExpenseInsertDto
+                {
+                    ExpenseId = expense.Id,
+                    UserId = userId,
+                    Amount = amountDue
+                });
+            }
+
+            var insertedUserExpenses = await userExpenseRepository.InsertManyAsync(userExpenses);
+
+            await transaction.CommitAsync();
+
+            return insertedUserExpenses;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
+    [Authorize]
     public async Task<ICollection<UserExpense?>> AddUserExpenses(
         [FromServices] IUserExpenseRepository userExpenseRepository,
         [FromServices] IExpenseRepository expenseRepository,
-        [FromServices] IGroupRepository groupRepository,
         [FromServices] IUserGroupRepository userGroupRepository,
         [FromServices] IHttpContextAccessor httpContextAccessor,
         ExpenseInsertInput expenseInsertInput

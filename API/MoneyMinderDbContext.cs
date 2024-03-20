@@ -79,7 +79,7 @@ public sealed class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, G
             .HasDefaultValue(null);
 
         builder.Entity<AppUser>()
-            .Property(au => au.ValidProfilePictureExtensions)
+            .Property(au => au.AvatarExtension)
             .HasDefaultValue(null);
 
         builder.Entity<Invitation>()

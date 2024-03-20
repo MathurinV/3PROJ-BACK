@@ -40,12 +40,11 @@ public class JustificationFileTypes
             ValidJustificationExtensions.Jpg => ".jpg",
             ValidJustificationExtensions.Png => ".png",
             ValidJustificationExtensions.Jpeg => ".jpeg",
-            null => "",
             _ => throw new ArgumentOutOfRangeException(nameof(justificationExtension), justificationExtension, null)
         };
     }
 
-    public static ValidJustificationExtensions? StringToValidJustificationExtension(string? justificationExtension)
+    public static ValidJustificationExtensions StringToValidJustificationExtension(string justificationExtension)
     {
         return justificationExtension switch
         {
@@ -53,7 +52,18 @@ public class JustificationFileTypes
             ".jpg" => ValidJustificationExtensions.Jpg,
             ".png" => ValidJustificationExtensions.Png,
             ".jpeg" => ValidJustificationExtensions.Jpeg,
-            null => null,
+            _ => throw new ArgumentOutOfRangeException(nameof(justificationExtension), justificationExtension, null)
+        };
+    }
+    
+    public static string ValidJustificationExtensionsMimeType(ValidJustificationExtensions? justificationExtension)
+    {
+        return justificationExtension switch
+        {
+            ValidJustificationExtensions.Pdf => "application/pdf",
+            ValidJustificationExtensions.Jpg => "image/jpeg",
+            ValidJustificationExtensions.Png => "image/png",
+            ValidJustificationExtensions.Jpeg => "image/jpeg",
             _ => throw new ArgumentOutOfRangeException(nameof(justificationExtension), justificationExtension, null)
         };
     }

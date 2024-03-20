@@ -75,15 +75,16 @@ public class JustificationsController : ControllerBase
         var ftpCLient = new AsyncFtpClient("ftp", DockerEnv.FtpJustificationsUser, DockerEnv.FtpJustificationsPassword);
         await ftpCLient.AutoConnect();
 
-        var fileExtension = JustificationFileTypes.ValidJustificationExtensionToString(expense.JustificationExtension);
+        var extension = expense.JustificationExtension;
+        var extensionString = JustificationFileTypes.ValidJustificationExtensionToString(extension);
 
         var stream = new MemoryStream();
-        var fileNameWithExtension = $"{expenseIdString}{fileExtension}";
+        var fileNameWithExtension = $"{expenseIdString}{extensionString}";
         var status = await ftpCLient.DownloadStream(stream, fileNameWithExtension);
         await ftpCLient.Disconnect();
         if (!status) return NotFound("Justification not found");
         stream.Position = 0;
 
-        return File(stream, "application/octet-stream");
+        return File(stream, JustificationFileTypes.ValidJustificationExtensionsMimeType(extension));
     }
 }

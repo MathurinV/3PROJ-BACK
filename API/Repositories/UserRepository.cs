@@ -83,4 +83,13 @@ public class UserRepository(
     {
         return await context.Users.FindAsync(userId);
     }
+
+    public async Task<bool> ChangeAvatarExtensionAsync(Guid userId, AvatarFileTypes.ValidAvatarExtensions? newExtension)
+    {
+        var user = await context.Users.FindAsync(userId);
+        if (user == null) throw new Exception("User not found");
+        user.AvatarExtension = newExtension;
+        await context.SaveChangesAsync();
+        return true;
+    }
 }

@@ -4,6 +4,7 @@ using DAL.Models.Invitations;
 using DAL.Models.Messages;
 using DAL.Models.UserExpenses;
 using DAL.Models.UserGroups;
+using HotChocolate;
 using Microsoft.AspNetCore.Identity;
 
 namespace DAL.Models.Users;
@@ -59,41 +60,51 @@ public class AppUser : IdentityUser<Guid>
 
     public ICollection<Invitation> Invitations { get; set; } = new List<Invitation>();
 
-    public ProfilePictureFileTypes.ValidProfilePictureExtensions? ValidProfilePictureExtensions { get; set; }
+    [GraphQLIgnore] public AvatarFileTypes.ValidAvatarExtensions? AvatarExtension { get; set; }
 }
 
-public class ProfilePictureFileTypes
+public class AvatarFileTypes
 {
-    public enum ValidProfilePictureExtensions
+    public enum ValidAvatarExtensions
     {
         Jpg,
         Png,
         Jpeg
     }
 
-    public static string ValidProfilePictureExtensionToString(
-        ValidProfilePictureExtensions? validProfilePictureExtensions)
+    public static string ValidAvatarExtensionToString(
+        ValidAvatarExtensions? validAvatarExtensions)
     {
-        return validProfilePictureExtensions switch
+        return validAvatarExtensions switch
         {
-            ValidProfilePictureExtensions.Jpg => ".jpg",
-            ValidProfilePictureExtensions.Png => ".png",
-            ValidProfilePictureExtensions.Jpeg => ".jpeg",
-            null => "",
-            _ => throw new ArgumentOutOfRangeException(nameof(validProfilePictureExtensions),
-                validProfilePictureExtensions, null)
+            ValidAvatarExtensions.Jpg => ".jpg",
+            ValidAvatarExtensions.Png => ".png",
+            ValidAvatarExtensions.Jpeg => ".jpeg",
+            _ => throw new ArgumentOutOfRangeException(nameof(validAvatarExtensions),
+                validAvatarExtensions, null)
         };
     }
 
-    public static ValidProfilePictureExtensions? StringToValidProfilePictureExtension(string? profilePictureExtension)
+    public static ValidAvatarExtensions StringToValidAvatarExtension(string avatarExtension)
     {
-        return profilePictureExtension switch
+        return avatarExtension switch
         {
-            ".jpg" => ValidProfilePictureExtensions.Jpg,
-            ".png" => ValidProfilePictureExtensions.Png,
-            ".jpeg" => ValidProfilePictureExtensions.Jpeg,
-            null => null,
-            _ => throw new ArgumentOutOfRangeException(nameof(profilePictureExtension), profilePictureExtension, null)
+            ".jpg" => ValidAvatarExtensions.Jpg,
+            ".png" => ValidAvatarExtensions.Png,
+            ".jpeg" => ValidAvatarExtensions.Jpeg,
+            _ => throw new ArgumentOutOfRangeException(nameof(avatarExtension), avatarExtension, null)
+        };
+    }
+    
+    public static string ValidAvatarExtensionsMimeType(ValidAvatarExtensions? validAvatarExtensions)
+    {
+        return validAvatarExtensions switch
+        {
+            ValidAvatarExtensions.Jpg => "image/jpeg",
+            ValidAvatarExtensions.Png => "image/png",
+            ValidAvatarExtensions.Jpeg => "image/jpeg",
+            _ => throw new ArgumentOutOfRangeException(nameof(validAvatarExtensions),
+                validAvatarExtensions, null)
         };
     }
 }
