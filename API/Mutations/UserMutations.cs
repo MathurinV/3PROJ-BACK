@@ -72,7 +72,6 @@ public class UserMutations
     [Authorize]
     public async Task<UserGroup?> JoinGroup([FromServices] IUserGroupRepository userGroupRepository,
         [FromServices] IInvitationRepository invitationRepository,
-        [FromServices] IGroupRepository groupRepository,
         [FromServices] IHttpContextAccessor httpContextAccessor,
         UserGroupInsertInput userGroupInsertInput)
     {
@@ -81,8 +80,26 @@ public class UserMutations
         var userGroupInsertDto = userGroupInsertInput.ToUserGroupInsertDto(Guid.Parse(userId));
         if (!await invitationRepository.DeleteAsync(userGroupInsertDto.GroupId, userGroupInsertDto.UserId))
             throw new Exception("Invitation not found");
+        if (await userGroupRepository.IsUserInGroup(userGroupInsertDto.UserId, userGroupInsertDto.GroupId))
+            throw new Exception("User is already in the group");
         return await userGroupRepository.InsertAsync(userGroupInsertDto);
     }
+
+    [Authorize]
+    public async Task<bool> RefuseInvitation([FromServices] IInvitationRepository invitationRepository,
+        [FromServices] IUserRepository userRepository,
+        [FromServices] IHttpContextAccessor httpContextAccessor,
+        Guid groupId)
+    {
+        var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userId == null) throw new Exception("User not found");
+        var user = userRepository.GetById(Guid.Parse(userId));
+        if (user.FirstOrDefault() == null) throw new Exception("User not found");
+        if (!await invitationRepository.DeleteAsync(groupId, Guid.Parse(userId)))
+            throw new Exception("Invitation not found");
+        return true;
+    }
+
 
     [Authorize]
     public async Task<bool> PayDues([FromServices] IUserExpenseRepository userExpenseRepository,
