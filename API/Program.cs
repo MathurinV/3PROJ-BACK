@@ -75,6 +75,7 @@ public static class Program
             .AddQueryType(d => d.Name("Query"))
             .AddTypeExtension<UserQueries>()
             .AddTypeExtension<GroupQueries>()
+            .AddTypeExtension<MessageQueries>()
             .AddMutationType(d => d.Name("Mutation"))
             .AddTypeExtension<UserMutations>()
             .AddTypeExtension<GroupMutations>()

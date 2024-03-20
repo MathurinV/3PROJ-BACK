@@ -13,4 +13,6 @@ public interface IMessageRepository
     ///     otherwise, null.
     /// </returns>
     Task<Message?> InsertAsync(MessageInsertDto messageInsertDto);
+
+    public IQueryable<Message> GetMessagesByOtherUserId(Guid currentUserId, Guid otherUserId);
 }

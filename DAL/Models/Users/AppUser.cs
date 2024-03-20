@@ -58,4 +58,42 @@ public class AppUser : IdentityUser<Guid>
     /// </summary>
 
     public ICollection<Invitation> Invitations { get; set; } = new List<Invitation>();
+
+    public ProfilePictureFileTypes.ValidProfilePictureExtensions? ValidProfilePictureExtensions { get; set; }
+}
+
+public class ProfilePictureFileTypes
+{
+    public enum ValidProfilePictureExtensions
+    {
+        Jpg,
+        Png,
+        Jpeg
+    }
+
+    public static string ValidProfilePictureExtensionToString(
+        ValidProfilePictureExtensions? validProfilePictureExtensions)
+    {
+        return validProfilePictureExtensions switch
+        {
+            ValidProfilePictureExtensions.Jpg => ".jpg",
+            ValidProfilePictureExtensions.Png => ".png",
+            ValidProfilePictureExtensions.Jpeg => ".jpeg",
+            null => "",
+            _ => throw new ArgumentOutOfRangeException(nameof(validProfilePictureExtensions),
+                validProfilePictureExtensions, null)
+        };
+    }
+
+    public static ValidProfilePictureExtensions? StringToValidProfilePictureExtension(string? profilePictureExtension)
+    {
+        return profilePictureExtension switch
+        {
+            ".jpg" => ValidProfilePictureExtensions.Jpg,
+            ".png" => ValidProfilePictureExtensions.Png,
+            ".jpeg" => ValidProfilePictureExtensions.Jpeg,
+            null => null,
+            _ => throw new ArgumentOutOfRangeException(nameof(profilePictureExtension), profilePictureExtension, null)
+        };
+    }
 }

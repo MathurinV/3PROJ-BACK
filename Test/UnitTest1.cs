@@ -67,7 +67,7 @@ public class UnitTest1
             var responseString = await response.Content.ReadAsStringAsync();
             _testOutputHelper.WriteLine(responseString);
             var jsonResponse = JObject.Parse(responseString);
-            var id = jsonResponse["data"]?["createUser"]?["id"];
+             var id = jsonResponse["data"]?["createUser"]?["id"];
 
             Assert.NotNull(id);
             usersIds.Add(Guid.Parse(id.ToString()));

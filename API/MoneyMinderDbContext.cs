@@ -78,6 +78,10 @@ public sealed class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, G
             .Property(e => e.JustificationExtension)
             .HasDefaultValue(null);
 
+        builder.Entity<AppUser>()
+            .Property(au => au.ValidProfilePictureExtensions)
+            .HasDefaultValue(null);
+
         builder.Entity<Invitation>()
             .Property(i => i.InvitedAt)
             .HasDefaultValueSql("NOW()");
