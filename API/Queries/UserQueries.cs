@@ -18,6 +18,7 @@ public class UserQueries
     }
 
     [Authorize]
+    [UseFirstOrDefault]
     [UseProjection]
     [UseFiltering]
     [UseSorting]

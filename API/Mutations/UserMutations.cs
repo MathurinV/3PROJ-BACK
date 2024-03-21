@@ -153,28 +153,6 @@ public class UserMutations
     }
 
     [Authorize]
-    public async Task<string> GetAvatar(Guid userId,
-        [FromServices] IHttpContextAccessor httpContextAccessor,
-        [FromServices] IUserRepository userRepository)
-    {
-        var userIdString = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (userIdString == null) throw new Exception("User not found");
-
-        var user = await userRepository.GetByIdAsync(userId);
-        if (user == null) throw new Exception("User not found");
-
-        var fileExtension = AvatarFileTypes.ValidAvatarExtensionToString(user.AvatarExtension);
-
-        var ftpClient = new AsyncFtpClient("ftp", DockerEnv.FtpAvatarsUser, DockerEnv.FtpAvatarsPassword);
-        await ftpClient.AutoConnect();
-        if (!await ftpClient.FileExists($"{userIdString}{fileExtension}")) throw new Exception("Avatar not found");
-        await ftpClient.Disconnect();
-        
-        var baseUrl = $"http://localhost:{DockerEnv.ApiPort}";
-        return $"{baseUrl}/avatars/{userIdString}{fileExtension}";
-    }
-
-    [Authorize]
     public async Task<bool> AddToBalance([FromServices] IUserRepository userRepository,
         [FromServices] IHttpContextAccessor httpContextAccessor,
         decimal amount)

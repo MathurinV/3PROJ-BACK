@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using DAL.Models.Expenses;
 using DAL.Models.Groups;
 using DAL.Models.Invitations;
@@ -60,6 +61,11 @@ public class AppUser : IdentityUser<Guid>
 
     public ICollection<Invitation> Invitations { get; set; } = new List<Invitation>();
 
+    [NotMapped]
+    public string? AvatarUrl => AvatarExtension != null
+        ? $"http://localhost:3000/avatars/{Id}{AvatarFileTypes.ValidAvatarExtensionToString(AvatarExtension)}"
+        : null;
+
     [GraphQLIgnore] public AvatarFileTypes.ValidAvatarExtensions? AvatarExtension { get; set; }
 }
 
@@ -95,7 +101,7 @@ public class AvatarFileTypes
             _ => throw new ArgumentOutOfRangeException(nameof(avatarExtension), avatarExtension, null)
         };
     }
-    
+
     public static string ValidAvatarExtensionsMimeType(ValidAvatarExtensions? validAvatarExtensions)
     {
         return validAvatarExtensions switch
