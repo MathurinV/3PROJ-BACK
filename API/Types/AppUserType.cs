@@ -18,7 +18,7 @@ public class AppUserType : ObjectType<AppUser>
         descriptor.Field(u => u.LockoutEnabled).Ignore();
         descriptor.Field(u => u.LockoutEnd).Ignore();
         descriptor.Field(u => u.AccessFailedCount).Ignore();
-        descriptor.Field(f => f.Id).IsProjected(true);
-        descriptor.Field(u => u.AvatarExtension).IsProjected(true);
+        descriptor.Field(f => f.Id).IsProjected();
+        descriptor.Field(u => u.AvatarExtension).IsProjected();
     }
 }

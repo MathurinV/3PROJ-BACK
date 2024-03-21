@@ -55,7 +55,7 @@ public class JustificationFileTypes
             _ => throw new ArgumentOutOfRangeException(nameof(justificationExtension), justificationExtension, null)
         };
     }
-    
+
     public static string ValidJustificationExtensionsMimeType(ValidJustificationExtensions? justificationExtension)
     {
         return justificationExtension switch

@@ -6,7 +6,6 @@ using FluentFTP;
 using HotChocolate.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.IdentityModel.Tokens;
 
 namespace API.Mutations;
 
@@ -57,12 +56,12 @@ public class ExpenseMutations
             var amountDue = totalAmount / totalWeight;
             amountDue = Math.Round(amountDue, 2);
             totalAmount = amountDue * totalWeight;
-            
+
             expenseInsertDto.Amount = totalAmount;
 
             var expense = await expenseRepository.InsertAsync(expenseInsertDto);
             if (expense == null) throw new Exception("Failed to insert expense");
-            
+
             foreach (var (userId, userWeight) in expenseInsertDto.WeightedUsers)
             {
                 // If the creator is also a weighted user, we don't want to add an expense for him

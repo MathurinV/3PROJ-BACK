@@ -80,7 +80,7 @@ public interface IUserRepository
     IQueryable<AppUser?> GetByEmail(string email = null!);
 
     Task<AppUser?> GetByIdAsync(Guid userId);
-    
+
     Task<bool> ChangeAvatarExtensionAsync(Guid userId,
         AvatarFileTypes.ValidAvatarExtensions? newExtension);
 }

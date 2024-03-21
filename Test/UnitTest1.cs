@@ -91,10 +91,7 @@ public class UnitTest1
 
         var users = new List<AppUserInsertDto>();
 
-        for (var i = 0; i < 4; i++)
-        {
-            users.Add(userFaker.Generate());
-        }
+        for (var i = 0; i < 4; i++) users.Add(userFaker.Generate());
 
         foreach (var currentUser in users)
         {
@@ -259,7 +256,7 @@ public class UnitTest1
 
         // creates new messages
         // logs in with sender credentials and send message to created users
-        for (int i = 0; i < 4; i++)
+        for (var i = 0; i < 4; i++)
         {
             loginStatus = SignIn(users[i].UserName, users[i].Password, false);
             Assert.True(loginStatus != null && bool.Parse(loginStatus));
@@ -267,6 +264,5 @@ public class UnitTest1
             var sentAt = SendMessage(usersIds[(i + 1) % 4]);
             Assert.True(sentAt != null);
         }
-        
     }
 }

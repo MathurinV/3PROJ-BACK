@@ -19,7 +19,7 @@ public class AvatarsController : ControllerBase
     {
         var userIdString = await distributedCache.GetStringAsync(token);
         if (userIdString == null) return BadRequest("Invalid token");
-        
+
         var userId = Guid.Parse(userIdString);
         var user = await userRepository.GetByIdAsync(userId);
         if (user == null) return NotFound($"User with ID {userId} not found");
@@ -37,20 +37,20 @@ public class AvatarsController : ControllerBase
             await ftpClient.DeleteFile(fileNameWithExtensionToDelete);
             await userRepository.ChangeAvatarExtensionAsync(userId, null);
         }
-        
+
         var stream = file.OpenReadStream();
         var fileNameWithExtension =
             $"{userIdString}{AvatarFileTypes.ValidAvatarExtensionToString(validFileExtension)}";
         var status = await ftpClient.UploadStream(stream, fileNameWithExtension);
-        
+
         await ftpClient.Disconnect();
-        
+
         switch (status)
         {
             case FtpStatus.Failed:
                 return BadRequest("Failed to upload file");
             case FtpStatus.Success:
-                await userRepository.ChangeAvatarExtensionAsync(userId, 
+                await userRepository.ChangeAvatarExtensionAsync(userId,
                     AvatarFileTypes.StringToValidAvatarExtension(fileExtension));
                 return Ok("File uploaded successfully");
             default:
@@ -65,7 +65,7 @@ public class AvatarsController : ControllerBase
         var userIdString = fileName.Split('.')[0];
         var user = await userRepository.GetByIdAsync(Guid.Parse(userIdString));
         if (user == null) return NotFound($"User with ID {userIdString} not found");
-        
+
         var ftpClient = new AsyncFtpClient("ftp", DockerEnv.FtpAvatarsUser, DockerEnv.FtpAvatarsPassword);
         await ftpClient.AutoConnect();
 

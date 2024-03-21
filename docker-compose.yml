@@ -17,7 +17,6 @@ services:
       
       # API
       API_ENDPOINT: ${API_ENDPOINT}
-      JWT_SECRET: ${JWT_SECRET}
       API_PORT: ${API_PORT}
       
       # GOOGLE_AUTHENTICATION
@@ -93,11 +92,6 @@ services:
       - ./ftp_data:/home/vsftpd
     networks:
       - local
-#    healthcheck:
-#      test: [ "CMD", "curl", "-f", "ftp://localhost:21" ]
-#      interval: 30s
-#      timeout: 10s
-#      retries: 5
 
 volumes:
   dbdata:

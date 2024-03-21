@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE rules SYSTEM "https://resources.jetbrains.com/writerside/1.0/redirection-rules.dtd">
+<rules>
+    <!-- format is as follows
+    <rule id="<unique id>">
+        <accepts>page.html</accepts>
+    </rule>
+    -->
+    <rule id="19fc182d">
+        <description>Created after removal of "Home" from Help Instance</description>
+        <accepts>Home.html</accepts>
+    </rule>
+    <rule id="7995cf24">
+        <description>Created after removal of "3PROJ-BACK" from Help Instance</description>
+        <accepts>3PROJ-BACK.html</accepts>
+    </rule>
+    <rule id="6418c763">
+        <description>Created after removal of "This is the first topic" from Help Instance</description>
+        <accepts>Default-topic.html</accepts>
+    </rule>
+</rules>
