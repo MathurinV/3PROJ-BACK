@@ -2,6 +2,7 @@ using API.ErrorsHandling;
 using API.Mutations;
 using API.Queries;
 using API.Repositories;
+using API.Subscriptions;
 using API.Types;
 using DAL.Models.Users;
 using DAL.Repositories;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 
 namespace API;
 
@@ -90,6 +92,9 @@ public static class Program
             .AddTypeExtension<GroupMutations>()
             .AddTypeExtension<MessageMutations>()
             .AddTypeExtension<ExpenseMutations>()
+            .AddSubscriptionType(d => d.Name("Subscription"))
+            .AddTypeExtension<MessageSubscriptions>()
+            .AddRedisSubscriptions((sp) => ConnectionMultiplexer.Connect($"cache:6379"))
             .AddType<AppUserType>()
             .AddFiltering()
             .AddSorting()
@@ -124,6 +129,8 @@ public static class Program
         app.UseStaticFiles();
 
         app.UseRouting();
+
+        app.UseWebSockets();
 
         app.UseAuthentication();
         app.UseAuthorization();
