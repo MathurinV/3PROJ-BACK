@@ -1,4 +1,7 @@
 using System.Text;
+using Bogus;
+using DAL.Models.Groups;
+using DAL.Models.Messages;
 using DAL.Models.Users;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -16,31 +19,83 @@ public class UnitTest1
         _testOutputHelper = testOutputHelper;
     }
 
+
     public static string GraphQlUrl { get; } = "http://localhost:3000/graphql";
+
+    private string? SendMessage(Guid receiverId)
+    {
+        var messageFaker = new Faker<MessageInsertInput>()
+            .RuleFor(m => m.Content, f => f.Lorem.Sentence());
+
+        var currentMessageInsertInput = messageFaker.Generate();
+        currentMessageInsertInput.ReceiverId = receiverId;
+
+        var sendMessageMutation = @"
+            mutation{
+                sendMessage(messageInsertInput: {
+                    content:""" + currentMessageInsertInput.Content + @""",
+                    receiverId:""" + receiverId + @"""
+                }){
+                    sentAt
+                }
+            }";
+
+        var sendMessageMutationObject = new { query = sendMessageMutation };
+        var serializedSendMessageMutation = JsonConvert.SerializeObject(sendMessageMutationObject);
+        var sendMessageContent = new StringContent(serializedSendMessageMutation, Encoding.UTF8, "application/json");
+        var sendMessageResponse = _client.PostAsync(GraphQlUrl, sendMessageContent).Result;
+        var sendMessageResponseString = sendMessageResponse.Content.ReadAsStringAsync().Result;
+        _testOutputHelper.WriteLine(sendMessageResponseString);
+        var sendMessageJsonResponse = JObject.Parse(sendMessageResponseString);
+        var sentAt = sendMessageJsonResponse["data"]?["sendMessage"]?["sentAt"];
+        return sentAt?.ToString();
+    }
+
+    private string? SignIn(string userName, string password, bool rememberMe)
+    {
+        var signInMutation = @"
+            mutation{
+                signIn(appUserLoginDto: {
+                    password:""" + password + @""",
+                    rememberMe:" + rememberMe.ToString().ToLower() + @",
+                    username:""" + userName + @"""
+                }){
+                    succeeded
+                }
+            }";
+        var signInMutationObject = new { query = signInMutation };
+        var serializedSignInMutation = JsonConvert.SerializeObject(signInMutationObject);
+        var signInContent = new StringContent(serializedSignInMutation, Encoding.UTF8, "application/json");
+        var signInResponse = _client.PostAsync(GraphQlUrl, signInContent).Result;
+        var signInResponseString = signInResponse.Content.ReadAsStringAsync().Result;
+        _testOutputHelper.WriteLine(signInResponseString);
+        var signInJsonResponse = JObject.Parse(signInResponseString);
+        var succeeded = signInJsonResponse["data"]?["signIn"]?["succeeded"];
+        return succeeded?.ToString();
+    }
 
     [Fact]
     public async void Creates4UsersInAGroup()
     {
         var usersIds = new List<Guid>();
-        var users = new List<AppUserInsertDto>
+
+        var userFaker = new Faker<AppUserInsertDto>("fr")
+            .RuleFor(u => u.UserName, f => f.Internet.UserName())
+            .RuleFor(u => u.Email, (f, u) => f.Internet.Email(u.UserName))
+            .RuleFor(u => u.Password, "P@ssw0rd")
+            .RuleFor(u => u.Role, f => "User");
+
+        var groupFaker = new Faker<GroupInsertInput>("fr")
+            .RuleFor(g => g.Name, f => f.Lorem.Word())
+            .RuleFor(g => g.Description, f => f.Lorem.Sentence());
+
+        var users = new List<AppUserInsertDto>();
+
+        for (var i = 0; i < 4; i++)
         {
-            new()
-            {
-                UserName = "user1", Email = "user1@test.com", Password = "P@ssw0rd", Role = "User"
-            },
-            new()
-            {
-                UserName = "user2", Email = "user2@test.com", Password = "P@ssw0rd", Role = "User"
-            },
-            new()
-            {
-                UserName = "user3", Email = "user3@test.com", Password = "P@ssw0rd", Role = "User"
-            },
-            new()
-            {
-                UserName = "user4", Email = "user4@test.com", Password = "P@ssw0rd", Role = "User"
-            }
-        };
+            users.Add(userFaker.Generate());
+        }
+
         foreach (var currentUser in users)
         {
             var createUserMutation = @"
@@ -67,40 +122,23 @@ public class UnitTest1
             var responseString = await response.Content.ReadAsStringAsync();
             _testOutputHelper.WriteLine(responseString);
             var jsonResponse = JObject.Parse(responseString);
-             var id = jsonResponse["data"]?["createUser"]?["id"];
+            var id = jsonResponse["data"]?["createUser"]?["id"];
 
             Assert.NotNull(id);
             usersIds.Add(Guid.Parse(id.ToString()));
         }
 
         //login to user1
-        var loginMutation = @"
-            mutation{
-                signIn(appUserLoginDto: {
-                    password:""P@ssw0rd"",
-                    rememberMe:false
-                    username:""user1""
-                }){
-                    succeeded
-                }
-            }
-            ";
-        var loginMutationObject = new { query = loginMutation };
-        var serializedLoginMutation = JsonConvert.SerializeObject(loginMutationObject);
-        var loginContent = new StringContent(serializedLoginMutation, Encoding.UTF8, "application/json");
-        var loginResponse = await _client.PostAsync(GraphQlUrl, loginContent);
-        var loginResponseString = await loginResponse.Content.ReadAsStringAsync();
-        _testOutputHelper.WriteLine(loginResponseString);
-        var loginJsonResponse = JObject.Parse(loginResponseString);
-        var loginSucceeded = loginJsonResponse["data"]?["signIn"]?["succeeded"];
-        Assert.True(loginSucceeded != null && (bool)loginSucceeded);
+        var loginStatus = SignIn(users[0].UserName, users[0].Password, false);
+        Assert.True(loginStatus != null && bool.Parse(loginStatus));
 
         //create group
+        var newGroup = groupFaker.Generate();
         var createGroupMutation = @"
             mutation{
                 createGroup(groupInsertInput: {
-                    description: ""new test group""
-                    name:""test group""
+                    description: """ + newGroup.Description + @""",
+                    name: """ + newGroup.Name + @"""
                 }){
                     id
                 }
@@ -141,25 +179,8 @@ public class UnitTest1
         // for each invited user, login and accept the invitation
         for (var i = 2; i < 5; i++)
         {
-            loginMutation = @"
-                mutation{
-                    signIn(appUserLoginDto: {
-                        password:""P@ssw0rd"",
-                        rememberMe:false
-                        username:""user" + i + @"""
-                    }){
-                        succeeded
-                    }
-                }";
-            loginMutationObject = new { query = loginMutation };
-            serializedLoginMutation = JsonConvert.SerializeObject(loginMutationObject);
-            loginContent = new StringContent(serializedLoginMutation, Encoding.UTF8, "application/json");
-            loginResponse = await _client.PostAsync(GraphQlUrl, loginContent);
-            loginResponseString = await loginResponse.Content.ReadAsStringAsync();
-            _testOutputHelper.WriteLine(loginResponseString);
-            loginJsonResponse = JObject.Parse(loginResponseString);
-            loginSucceeded = loginJsonResponse["data"]?["signIn"]?["succeeded"];
-            Assert.True(loginSucceeded != null && (bool)loginSucceeded);
+            loginStatus = SignIn(users[i - 1].UserName, users[i - 1].Password, false);
+            Assert.True(loginStatus != null && bool.Parse(loginStatus));
 
             var acceptInvitationMutation = @"
                 mutation{
@@ -203,6 +224,10 @@ public class UnitTest1
         var userGroups = getGroupJsonResponse["data"]?["groupById"]?[0]?["userGroups"];
         if (userGroups != null) Assert.Equal(4, userGroups.Count());
 
+        // signs in user1
+        loginStatus = SignIn(users[0].UserName, users[0].Password, false);
+        Assert.True(loginStatus != null && bool.Parse(loginStatus));
+
         // creates a new expense
         var createExpenseMutation = @"
             mutation{
@@ -231,5 +256,17 @@ public class UnitTest1
         var paidAt = createExpenseJsonResponse["data"]?["addUserExpenses"]?[0];
         _testOutputHelper.WriteLine(paidAt?.ToString());
         Assert.NotNull(paidAt);
+
+        // creates new messages
+        // logs in with sender credentials and send message to created users
+        for (int i = 0; i < 4; i++)
+        {
+            loginStatus = SignIn(users[i].UserName, users[i].Password, false);
+            Assert.True(loginStatus != null && bool.Parse(loginStatus));
+
+            var sentAt = SendMessage(usersIds[(i + 1) % 4]);
+            Assert.True(sentAt != null);
+        }
+        
     }
 }
