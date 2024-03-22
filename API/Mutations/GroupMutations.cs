@@ -4,6 +4,7 @@ using DAL.Models.Invitations;
 using DAL.Models.UserGroups;
 using DAL.Repositories;
 using HotChocolate.Authorization;
+using HotChocolate.Language;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 

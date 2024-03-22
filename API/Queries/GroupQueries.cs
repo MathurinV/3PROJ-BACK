@@ -1,5 +1,6 @@
 using DAL.Models.Groups;
 using DAL.Repositories;
+using HotChocolate.Language;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Queries;

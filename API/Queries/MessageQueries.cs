@@ -2,6 +2,7 @@ using System.Security.Claims;
 using DAL.Models.Messages;
 using DAL.Repositories;
 using HotChocolate.Authorization;
+using HotChocolate.Language;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Queries;
