@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using StackExchange.Redis;
 
 namespace API;
@@ -81,6 +82,7 @@ public static class Program
         // GraphQL
         services
             .AddGraphQLServer()
+            .AddRedisSubscriptions((sp) => ConnectionMultiplexer.Connect("cache:6379"))
             .AddAuthorization()
             .AddErrorFilter<GraphQlErrorFilter>()
             .AddQueryType(d => d.Name("Query"))
@@ -93,9 +95,9 @@ public static class Program
             .AddTypeExtension<GroupMutations>()
             .AddTypeExtension<MessageMutations>()
             .AddTypeExtension<ExpenseMutations>()
-            // .AddSubscriptionType(d => d.Name("Subscription"))
-            // .AddTypeExtension<MessageSubscriptions>()
-            // .AddRedisSubscriptions((sp) => ConnectionMultiplexer.Connect($"cache:6379"))
+            .AddSubscriptionType(d => d.Name("Subscription"))
+            .AddTypeExtension<MessageSubscriptions>()
+
             .AddType<AppUserType>()
             .AddFiltering()
             .AddSorting()

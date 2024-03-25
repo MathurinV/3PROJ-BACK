@@ -13,6 +13,11 @@ public class MessageRepository(MoneyMinderDbContext context) : IMessageRepositor
         return tmp.Entity;
     }
 
+    public IQueryable<Message?> GetMessageById(Guid messageId)
+    {
+        return context.Messages.Where(x => x.Id == messageId);
+    }
+
     public IQueryable<Message> GetMessagesByOtherUserId(Guid currentUserId, Guid otherUserId)
     {
         return context.Messages.Where(x =>
