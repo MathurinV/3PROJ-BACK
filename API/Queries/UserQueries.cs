@@ -31,6 +31,7 @@ public class UserQueries
         return userRepository.GetById(Guid.Parse(userId));
     }
 
+    [UseFirstOrDefault]
     [UseProjection]
     [UseFiltering]
     [UseSorting]
@@ -39,6 +40,7 @@ public class UserQueries
         return userRepository.GetById(id);
     }
 
+    [UseFirstOrDefault]
     [UseProjection]
     [UseFiltering]
     [UseSorting]

@@ -16,6 +16,7 @@ public class GroupQueries
         return groupRepository.GetAll();
     }
 
+    [UseFirstOrDefault]
     [UseProjection]
     [UseFiltering]
     [UseSorting]
