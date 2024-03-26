@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 using StackExchange.Redis;
 
 namespace API;
@@ -40,6 +39,7 @@ public static class Program
                     .AllowAnyHeader()
                     .AllowCredentials()
                     .WithMethods("GET", "POST")
+                    .AllowAnyOrigin()
                 );
         });
 
@@ -81,7 +81,7 @@ public static class Program
         // GraphQL
         services
             .AddGraphQLServer()
-            .AddRedisSubscriptions((sp) => ConnectionMultiplexer.Connect("cache:6379"))
+            .AddRedisSubscriptions(_ => ConnectionMultiplexer.Connect("cache:6379"))
             .AddAuthorization()
             .AddErrorFilter<GraphQlErrorFilter>()
             .AddQueryType(d => d.Name("Query"))
