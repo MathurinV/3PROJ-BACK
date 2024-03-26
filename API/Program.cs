@@ -40,8 +40,7 @@ public static class Program
                     .AllowAnyHeader()
                     .AllowCredentials()
                     .WithMethods("GET", "POST")
-                    .WithOrigins(DockerEnv.ClientUrl)
-            );
+                );
         });
 
         services.AddHttpContextAccessor();
