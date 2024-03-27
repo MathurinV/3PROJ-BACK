@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using DAL.Models.Users;
 using HotChocolate;
 
@@ -10,6 +11,6 @@ public class Message
     public AppUser Sender { get; set; } = null!;
     [GraphQLIgnore] public Guid ReceiverId { get; set; }
     public AppUser Receiver { get; set; } = null!;
-    public string Content { get; set; } = null!;
+    [StringLength(1000)] public string Content { get; set; } = null!;
     public DateTime SentAt { get; set; }
 }

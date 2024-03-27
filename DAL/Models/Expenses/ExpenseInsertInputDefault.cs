@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace DAL.Models.Expenses;
 
 public class ExpenseInsertInputDefault
@@ -5,7 +7,7 @@ public class ExpenseInsertInputDefault
     public ICollection<Guid> UsersIds { get; set; } = null!;
     public Guid GroupId { get; set; }
     public decimal Amount { get; set; }
-    public string Description { get; set; } = null!;
+    [StringLength(255)] public string Description { get; set; } = null!;
 
     public ExpenseInsertDto ToExpenseInsertDto(Guid createdById)
     {

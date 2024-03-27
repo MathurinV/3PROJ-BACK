@@ -1,6 +1,7 @@
 ﻿networks:
   default:
   local:
+    internal: true
 
 services:
   api:
@@ -42,6 +43,8 @@ services:
       - "${API_PORT}:8080"
     depends_on:
       - db
+      - cache
+      - ftp
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080/health" ]
       interval: 30s

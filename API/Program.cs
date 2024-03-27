@@ -39,8 +39,8 @@ public static class Program
                     .AllowAnyHeader()
                     .AllowCredentials()
                     .WithMethods("GET", "POST")
-                    .AllowAnyOrigin()
-                );
+                    .SetIsOriginAllowed(origin => true)
+            );
         });
 
         services.AddHttpContextAccessor();
@@ -96,7 +96,6 @@ public static class Program
             .AddTypeExtension<ExpenseMutations>()
             .AddSubscriptionType(d => d.Name("Subscription"))
             .AddTypeExtension<MessageSubscriptions>()
-
             .AddType<AppUserType>()
             .AddFiltering()
             .AddSorting()

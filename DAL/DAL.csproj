@@ -7,9 +7,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="HotChocolate.Abstractions" Version="14.0.0-p.70" />
+        <PackageReference Include="HotChocolate.Abstractions" Version="14.0.0-p.70"/>
         <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.1" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.1"/>
         <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="8.0.1"/>
     </ItemGroup>
 

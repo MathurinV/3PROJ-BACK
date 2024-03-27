@@ -18,7 +18,7 @@ public class AppUser : IdentityUser<Guid>
     /// <summary>
     ///     Represents the balance of an application user. Default value is 0.
     /// </summary>
-    public decimal Balance { get; set; } = 0;
+    public decimal Balance { get; set; }
 
     /// <summary>
     ///     Represents a collection of user groups associated with an application user. Default value is an empty list.

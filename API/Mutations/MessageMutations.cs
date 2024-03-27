@@ -3,7 +3,6 @@ using API.Subscriptions;
 using DAL.Models.Messages;
 using DAL.Repositories;
 using HotChocolate.Authorization;
-using HotChocolate.Language;
 using HotChocolate.Subscriptions;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,7 +20,7 @@ public class MessageMutations
         var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (userId == null) return null;
         var tmpMessage = await messageRepository.InsertAsync(messageInsertInput.ToMessageInsertDto(Guid.Parse(userId)));
-        await eventSender.SendAsync(nameof(MessageSubscriptions.MessageAdded),tmpMessage);
+        await eventSender.SendAsync(nameof(MessageSubscriptions.MessageAdded), tmpMessage);
         return tmpMessage;
     }
 

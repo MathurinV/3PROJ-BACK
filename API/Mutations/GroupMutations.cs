@@ -4,7 +4,6 @@ using DAL.Models.Invitations;
 using DAL.Models.UserGroups;
 using DAL.Repositories;
 using HotChocolate.Authorization;
-using HotChocolate.Language;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,7 +20,6 @@ public class GroupMutations
     {
         var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (userId == null) return null;
-        Console.WriteLine(userId);
         var currentGroup = await groupRepository.InsertAsync(groupInsertInput.ToGroupInsertDto(Guid.Parse(userId)));
         if (currentGroup == null) throw new Exception("Group not created");
         var userGroup = new UserGroupInsertDto

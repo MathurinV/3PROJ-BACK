@@ -2,7 +2,6 @@ using System.Security.Claims;
 using DAL.Models.Expenses;
 using DAL.Repositories;
 using HotChocolate.Authorization;
-using HotChocolate.Language;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Queries;
@@ -44,7 +43,6 @@ public class ExpenseQueries
         var userIdsWithAmounts = new List<KeyValuePair<Guid, decimal>>();
 
         foreach (var keyValuePair in userAmountsList)
-        {
             if (keyValuePair.Value.HasValue)
             {
                 var currentUserAmount = Math.Round(keyValuePair.Value.Value, 2);
@@ -58,25 +56,19 @@ public class ExpenseQueries
                 numberOfUsersWithoutSpecifiedAmount += 1;
                 userIdsWithoutSpecifiedAmount.Add(keyValuePair.Key);
             }
-        }
 
         // At this point, the list of users has been explored, and we know the amount left to be paid by the users without a specified amount
         if (numberOfUsersWithoutSpecifiedAmount > 0)
         {
             var toBePaidByUserAmount = Math.Round(totalAmount / numberOfUsersWithoutSpecifiedAmount, 2);
             foreach (var id in userIdsWithoutSpecifiedAmount)
-            {
                 userIdsWithAmounts.Add(new KeyValuePair<Guid, decimal>(id, toBePaidByUserAmount));
-            }
         }
 
         // Removes the expense creator from the list if he is included in the expensePrevisualizationInput
         var isCreatorInUserIdsWithAmounts = userIdsWithAmounts.FirstOrDefault(x => x.Key == creatorId);
         // /!\
-        if (isCreatorInUserIdsWithAmounts.Key != default)
-        {
-            userIdsWithAmounts.Remove(isCreatorInUserIdsWithAmounts);
-        }
+        if (isCreatorInUserIdsWithAmounts.Key != default) userIdsWithAmounts.Remove(isCreatorInUserIdsWithAmounts);
 
         return userIdsWithAmounts;
     }

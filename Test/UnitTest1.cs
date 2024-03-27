@@ -85,8 +85,8 @@ public class UnitTest1
             .RuleFor(u => u.Password, "P@ssw0rd")
             .RuleFor(u => u.Role, f => "User");
 
-        var groupFaker = new Faker<GroupInsertInput>("fr")
-            .RuleFor(g => g.Name, f => f.Lorem.Word())
+        var groupFaker = new Faker<GroupInsertInput>()
+            .RuleFor(g => g.Name, f => f.Internet.UserName())
             .RuleFor(g => g.Description, f => f.Lorem.Sentence());
 
         var users = new List<AppUserInsertDto>();

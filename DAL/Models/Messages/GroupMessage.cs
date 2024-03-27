@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using DAL.Models.Groups;
 using DAL.Models.Users;
 using HotChocolate;
@@ -11,6 +12,6 @@ public class GroupMessage
     public AppUser Sender { get; set; } = null!;
     [GraphQLIgnore] public Guid GroupId { get; set; }
     public Group Group { get; set; } = null!;
-    public string Content { get; set; } = null!;
+    [StringLength(1000)] public string Content { get; set; } = null!;
     public DateTime SentAt { get; set; }
 }

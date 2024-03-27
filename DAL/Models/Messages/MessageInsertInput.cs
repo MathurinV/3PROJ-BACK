@@ -1,9 +1,11 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace DAL.Models.Messages;
 
 public class MessageInsertInput
 {
     public Guid ReceiverId { get; set; }
-    public string Content { get; set; } = null!;
+    [StringLength(1000)] public string Content { get; set; } = null!;
 
     public MessageInsertDto ToMessageInsertDto(Guid senderId)
     {
