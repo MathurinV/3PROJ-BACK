@@ -37,9 +37,8 @@ public static class Program
             options.AddPolicy("DefaultPolicy", configurePolicy =>
                 configurePolicy
                     .AllowAnyHeader()
-                    .AllowCredentials()
                     .WithMethods("GET", "POST")
-                    .SetIsOriginAllowed(origin => true)
+                    .AllowCredentials().WithOrigins("0.0.0.0")
             );
         });
 
