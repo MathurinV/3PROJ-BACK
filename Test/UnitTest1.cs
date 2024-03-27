@@ -209,7 +209,7 @@ public class UnitTest1
                             }
                         }
                     }
-                }";
+                }"; 
 
         var getGroupQueryObject = new { query = getGroupQuery };
         var serializedGetGroupQuery = JsonConvert.SerializeObject(getGroupQueryObject);
@@ -218,7 +218,7 @@ public class UnitTest1
         var getGroupResponseString = await getGroupResponse.Content.ReadAsStringAsync();
         _testOutputHelper.WriteLine(getGroupResponseString);
         var getGroupJsonResponse = JObject.Parse(getGroupResponseString);
-        var userGroups = getGroupJsonResponse["data"]?["groupById"]?[0]?["userGroups"];
+        var userGroups = getGroupJsonResponse["data"]?["groupById"]?["userGroups"];
         if (userGroups != null) Assert.Equal(4, userGroups.Count());
 
         // signs in user1
