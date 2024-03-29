@@ -35,10 +35,15 @@ public static class Program
         services.AddCors(options =>
         {
             options.AddPolicy("DefaultPolicy", configurePolicy =>
-                configurePolicy
+                // configurePolicy
+                //     .AllowAnyHeader()
+                //     .AllowCredentials()
+                //     .WithMethods("GET", "POST")
+                //     .WithOrigins(DockerEnv.ClientUrl)
+                configurePolicy.SetIsOriginAllowed(_ => true)
                     .AllowAnyHeader()
-                    .AllowCredentials().WithOrigins("*")
-                    .WithMethods("GET", "POST")
+                    .AllowAnyMethod()
+                    .AllowCredentials()
             );
         });
 
@@ -47,12 +52,22 @@ public static class Program
         services.AddStackExchangeRedisCache(options => { options.Configuration = "cache:6379"; });
 
         // Postgres identity db context
-        services.AddDbContext<MoneyMinderDbContext>(options =>
+        // services.AddDbContext<MoneyMinderDbContext>(options =>
+        // {
+        //     options.UseNpgsql(DockerEnv.ConnectionString
+        //         , o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
+        //     );
+        // });
+
+        services.AddTransient<MoneyMinderDbContext>(options =>
         {
-            options.UseNpgsql(DockerEnv.ConnectionString
+            var optionsBuilder = new DbContextOptionsBuilder<MoneyMinderDbContext>();
+            optionsBuilder.UseNpgsql(DockerEnv.ConnectionString
                 , o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
             );
+            return new MoneyMinderDbContext(optionsBuilder.Options);
         });
+
 
         // Add Identity
         services.AddIdentity<AppUser, AppRole>()
@@ -77,7 +92,7 @@ public static class Program
 
         services.AddAuthorization();
 
-        // GraphQL
+// GraphQL
         services
             .AddGraphQLServer()
             .AddRedisSubscriptions(_ => ConnectionMultiplexer.Connect("cache:6379"))
@@ -101,7 +116,7 @@ public static class Program
             .AddProjections()
             ;
 
-        // Dependency Injection
+// Dependency Injection
         services
             .AddScoped<IUserRepository, UserRepository>()
             .AddScoped<IGroupRepository, GroupRepository>()
@@ -113,7 +128,7 @@ public static class Program
             .AddScoped<IInvitationRepository, InvitationRepository>()
             ;
 
-        // Health checks
+// Health checks
         services.AddHealthChecks()
             .AddNpgSql(DockerEnv.ConnectionString);
 
@@ -123,7 +138,7 @@ public static class Program
 
         app.UseCors("DefaultPolicy");
 
-        // Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment()) app.UseDeveloperExceptionPage();
 
         app.UseStaticFiles();

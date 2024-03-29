@@ -13,7 +13,6 @@ public class ExpenseInsertInputDefault
     {
         return new ExpenseInsertDto
         {
-            WeightedUsers = UsersIds.Select(x => new KeyValuePair<Guid, decimal>(x, 1)).ToList(),
             GroupId = GroupId,
             Amount = Amount,
             Description = Description,

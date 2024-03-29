@@ -1,5 +1,6 @@
 using System.Text;
 using Bogus;
+using DAL.Models.Expenses;
 using DAL.Models.Groups;
 using DAL.Models.Messages;
 using DAL.Models.Users;
@@ -22,6 +23,76 @@ public class UnitTest1
 
     public static string GraphQlUrl { get; } = "http://localhost:3000/graphql";
 
+    private string? AddExpense(Guid groupId, string previzualisation)
+    {
+        var fakeDescription = new Faker().Lorem.Sentence();
+        var addUserExpenseMutation = @"
+        mutation {
+            addUserExpense(
+                expenseInsertInput: {
+                    description: """ + fakeDescription + @""",
+                    groupId: """ + groupId + $@""",
+                    usersWithAmount: {previzualisation}
+                }}
+            ) {{
+                amount
+                paidAt
+            }}
+        }}";
+        addUserExpenseMutation = addUserExpenseMutation.Replace("\"key\"", "key");
+        addUserExpenseMutation = addUserExpenseMutation.Replace("\"value\"", "value");
+        
+        var addUserExpenseMutationObject = new { query = addUserExpenseMutation };
+        var serializedAddUserExpenseMutation = JsonConvert.SerializeObject(addUserExpenseMutationObject);
+        var addUserExpenseContent = new StringContent(serializedAddUserExpenseMutation, Encoding.UTF8, "application/json");
+        var addUserExpenseResponse = _client.PostAsync(GraphQlUrl, addUserExpenseContent).Result;
+        var addUserExpenseResponseString = addUserExpenseResponse.Content.ReadAsStringAsync().Result;
+        _testOutputHelper.WriteLine(addUserExpenseResponseString);
+        var addUserExpenseJsonResponse = JObject.Parse(addUserExpenseResponseString);
+        var amount = addUserExpenseJsonResponse["data"]?["addUserExpense"]?[0]?["amount"];
+        return amount?.ToString();
+    }
+
+    private string? PrevisualizeExpense(List<Guid> userGuids, Guid groupId)
+    {
+        var previsualizeExpenseFaker = new Faker<ExpensePrevisualizationInput>()
+            .RuleFor(epi => epi.Description, f => f.Lorem.Sentence())
+            .RuleFor(epi => epi.GroupId, f => groupId)
+            .RuleFor(epi => epi.Amount, f => f.Random.Decimal(1, 1000))
+            .RuleFor(epi => epi.UserAmountsList, f => userGuids.Select(ug => new KeyValuePair<Guid, decimal?>(ug, null)).ToList());
+        
+        var currentPrevisualizeExpense = previsualizeExpenseFaker.Generate();
+
+        var userAmountsListString = "[";
+        foreach (var userAmount in currentPrevisualizeExpense.UserAmountsList)
+        {
+            userAmountsListString += $"{{key: \"{userAmount.Key}\" }},";
+        }
+        userAmountsListString = userAmountsListString.Remove(userAmountsListString.Length - 1);
+        userAmountsListString += "]";
+        
+        var previsualizeEpenseQuery = $@"
+            {{previsualizeUserExpenses(expensePrevisualizationInput: {{
+                amount:{currentPrevisualizeExpense.Amount}
+                description:""{currentPrevisualizeExpense.Description}""
+                groupId:""{groupId}""
+                userAmountsList: {userAmountsListString}
+            }}){{
+                key
+                value
+            }}}}";
+        
+        var previsualizeExpenseObject = new { query = previsualizeEpenseQuery };
+        var serializedPrevisualizeExpense = JsonConvert.SerializeObject(previsualizeExpenseObject);
+        var previsualizeExpenseContent = new StringContent(serializedPrevisualizeExpense, Encoding.UTF8, "application/json");
+        var previsualizeExpenseResponse = _client.PostAsync(GraphQlUrl, previsualizeExpenseContent).Result;
+        var previsualizeExpenseResponseString = previsualizeExpenseResponse.Content.ReadAsStringAsync().Result;
+        _testOutputHelper.WriteLine(previsualizeExpenseResponseString);
+        var previsualizeExpenseJsonResponse = JObject.Parse(previsualizeExpenseResponseString);
+        var previsualizeExpense = previsualizeExpenseJsonResponse["data"]?["previsualizeUserExpenses"];
+        return previsualizeExpense?.ToString();
+    }
+    
     private string? SendMessage(Guid receiverId)
     {
         var messageFaker = new Faker<MessageInsertInput>()
@@ -209,7 +280,7 @@ public class UnitTest1
                             }
                         }
                     }
-                }"; 
+                }";
 
         var getGroupQueryObject = new { query = getGroupQuery };
         var serializedGetGroupQuery = JsonConvert.SerializeObject(getGroupQueryObject);
@@ -225,34 +296,11 @@ public class UnitTest1
         loginStatus = SignIn(users[0].UserName, users[0].Password, false);
         Assert.True(loginStatus != null && bool.Parse(loginStatus));
 
-        // creates a new expense
-        var createExpenseMutation = @"
-            mutation{
-                addUserExpenses(expenseInsertInput: {
-                    amount:100
-                    description:""test expense""
-                    groupId:""" + groupId + @"""
-                    weightedUsers:[
-                        {
-                            key:""" + usersIds[1] + @""",
-                            value:1
-                        }
-                    ]
-                }){
-                    paidAt
-                }
-            }";
-        var createExpenseMutationObject = new { query = createExpenseMutation };
-        var serializedCreateExpenseMutation = JsonConvert.SerializeObject(createExpenseMutationObject);
-        var createExpenseContent =
-            new StringContent(serializedCreateExpenseMutation, Encoding.UTF8, "application/json");
-        var createExpenseResponse = await _client.PostAsync(GraphQlUrl, createExpenseContent);
-        var createExpenseResponseString = await createExpenseResponse.Content.ReadAsStringAsync();
-        _testOutputHelper.WriteLine(createExpenseResponseString);
-        var createExpenseJsonResponse = JObject.Parse(createExpenseResponseString);
-        var paidAt = createExpenseJsonResponse["data"]?["addUserExpenses"]?[0];
-        _testOutputHelper.WriteLine(paidAt?.ToString());
-        Assert.NotNull(paidAt);
+        var previsualize = PrevisualizeExpense(usersIds, Guid.Parse(groupId.ToString())!);
+        Assert.NotNull(previsualize);
+        
+        var addExpense = AddExpense(Guid.Parse(groupId.ToString())!, previsualize!);
+        Assert.NotNull(addExpense);
 
         // creates new messages
         // logs in with sender credentials and send message to created users

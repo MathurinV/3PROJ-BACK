@@ -2,21 +2,20 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DAL.Models.Expenses;
 
-public class ExpenseInsertDto
+public class ExpenseAddUserExpenseInput
 {
     public Guid GroupId { get; set; }
-    public decimal Amount { get; set; }
     [StringLength(255)] public string Description { get; set; } = null!;
     public Guid CreatedById { get; set; }
 
-    public Expense ToExpense()
+    public ExpenseInsertDto ToExpenseInsertDto(decimal amount)
     {
-        return new Expense
+        return new ExpenseInsertDto
         {
-            GroupId = GroupId,
-            Amount = Amount,
+            Amount = amount,
             Description = Description,
-            CreatedById = CreatedById
+            CreatedById = CreatedById,
+            GroupId = GroupId,
         };
     }
 }

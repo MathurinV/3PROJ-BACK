@@ -13,159 +13,202 @@ namespace API.Mutations;
 public class ExpenseMutations
 {
     [Authorize]
-    public async Task<ICollection<UserExpense?>> AddUserExpensesDefaultWeights(
+    public async Task<ICollection<UserExpense?>> AddUserExpense(
+        ExpenseInsertInput expenseInsertInput,
+        [FromServices] IUserGroupRepository userGroupRepository,
+        [FromServices] IUserRepository userRepository,
         [FromServices] IUserExpenseRepository userExpenseRepository,
         [FromServices] IExpenseRepository expenseRepository,
-        [FromServices] IUserGroupRepository userGroupRepository,
-        [FromServices] IHttpContextAccessor httpContextAccessor,
-        ExpenseInsertInputDefault expenseInsertInputDefault)
-    {
-        var createdByIdString = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (createdByIdString == null) throw new Exception("User not found");
-
-        var createdById = Guid.Parse(createdByIdString);
-        var expenseInsertDto = expenseInsertInputDefault.ToExpenseInsertDto(createdById);
-
-        if (await userGroupRepository.AreUsersInGroup(expenseInsertDto.GroupId,
-                expenseInsertDto.WeightedUsers.Select(x => x.Key)) == false)
-            throw new Exception("Not all the weighted users are in the group");
-
-        var totalWeight = expenseInsertDto.WeightedUsers.Count;
-        var totalAmount = expenseInsertInputDefault.Amount;
-
-        var creatorWeightedUser = expenseInsertDto.WeightedUsers.FirstOrDefault(x => x.Key == createdById);
-        if (creatorWeightedUser.Key != default)
-        {
-            // The creator is also a weighted user, we need to remove him from the weighted users and adjust the total amount
-            // In this case, the creator has been checked to be in the group
-            totalAmount -= expenseInsertDto.Amount * creatorWeightedUser.Value / totalWeight;
-            totalWeight -= 1;
-            expenseInsertDto.WeightedUsers.Remove(creatorWeightedUser);
-        }
-        else
-        {
-            // the creator is not a weighted user, we need to check if he is in the group
-            if (await userGroupRepository.IsUserInGroup(createdById, expenseInsertDto.GroupId) == false)
-                throw new Exception("The creator is not in the group");
-        }
-
-        await using var transaction = await expenseRepository.BeginTransactionAsync();
-        try
-        {
-            var userExpenses = new List<UserExpenseInsertDto>();
-            var amountDue = totalAmount / totalWeight;
-            amountDue = Math.Round(amountDue, 2);
-            totalAmount = amountDue * totalWeight;
-
-            expenseInsertDto.Amount = totalAmount;
-
-            var expense = await expenseRepository.InsertAsync(expenseInsertDto);
-            if (expense == null) throw new Exception("Failed to insert expense");
-
-            foreach (var (userId, userWeight) in expenseInsertDto.WeightedUsers)
-            {
-                // If the creator is also a weighted user, we don't want to add an expense for him
-                if (userId == createdById) continue;
-
-                userExpenses.Add(new UserExpenseInsertDto
-                {
-                    ExpenseId = expense.Id,
-                    UserId = userId,
-                    Amount = amountDue
-                });
-            }
-
-            var insertedUserExpenses = await userExpenseRepository.InsertManyAsync(userExpenses);
-
-            await transaction.CommitAsync();
-
-            return insertedUserExpenses;
-        }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
-    }
-
-    [Authorize]
-    public async Task<ICollection<UserExpense?>> AddUserExpenses(
-        [FromServices] IUserExpenseRepository userExpenseRepository,
-        [FromServices] IExpenseRepository expenseRepository,
-        [FromServices] IUserGroupRepository userGroupRepository,
-        [FromServices] IHttpContextAccessor httpContextAccessor,
-        ExpenseInsertInput expenseInsertInput
+        [FromServices] IHttpContextAccessor httpContextAccessor
     )
     {
-        var createdByStringId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        // Cheking if the logged in user exists
-        if (createdByStringId == null) throw new Exception("User not found");
+        var userIdString = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
+                           throw new Exception("User not found");
 
-        var createdByGuidId = Guid.Parse(createdByStringId);
-        var expenseInsertDto = expenseInsertInput.ToExpenseInsertDto(createdByGuidId);
+        var userId = Guid.Parse(userIdString);
+        var user = await userRepository.GetByIdAsync(userId) ?? throw new Exception("User not found");
 
-        // Checks if all the weighted users are in the group
-        if (await userGroupRepository.AreUsersInGroup(expenseInsertDto.GroupId,
-                expenseInsertDto.WeightedUsers.Select(x => x.Key)) == false)
-            throw new Exception("Not all the weighted users are in the group");
+        var guidAmountsList = expenseInsertInput.UsersWithAmount;
+        
+        var expenseInsertDto = expenseInsertInput.ToExpenseInsertDto(userId);
+        
+        var userIds = guidAmountsList.Select(x => x.Key).ToList();
+        if (!await userGroupRepository.AreUsersInGroup(expenseInsertDto.GroupId, userIds))
+            throw new Exception("All users are not in the group");
 
-        var totalWeight = expenseInsertInput.WeightedUsers.Sum(x => x.Value);
-        var totalAmount = expenseInsertInput.Amount;
+        var totalAmount = guidAmountsList.Sum(x => x.Value);
+        expenseInsertDto.Amount = totalAmount;
+        var currentExpense = await expenseRepository.InsertAsync(expenseInsertDto) ??
+                             throw new Exception("Failed to insert expense");
 
-        // Handle the case where the creator is also a weighted user
-        var creatorWeightedUser = expenseInsertDto.WeightedUsers.FirstOrDefault(x => x.Key == createdByGuidId);
-        if (creatorWeightedUser.Key != default)
+        var userExpenses = new List<UserExpenseInsertDto>();
+        foreach (var (guid, amount) in guidAmountsList)
         {
-            // The creator is also a weighted user, we need to remove him from the weighted users and adjust the total amount
-            // In this case, the creator has been checked to be in the group
-            totalAmount -= expenseInsertDto.Amount * creatorWeightedUser.Value / totalWeight;
-            totalWeight -= creatorWeightedUser.Value;
-            expenseInsertDto.WeightedUsers.Remove(creatorWeightedUser);
-        }
-        else
-        {
-            // the creator is not a weighted user, we need to check if he is in the group
-            if (await userGroupRepository.IsUserInGroup(createdByGuidId, expenseInsertDto.GroupId) == false)
-                throw new Exception("The creator is not in the group");
-        }
-
-        await using var transaction = await expenseRepository.BeginTransactionAsync();
-        try
-        {
-            var expense = await expenseRepository.InsertAsync(expenseInsertDto);
-            if (expense == null) return [];
-
-            var userExpenses = new List<UserExpenseInsertDto>();
-
-            foreach (var (userId, userWeight) in expenseInsertDto.WeightedUsers)
+            userExpenses.Add(new UserExpenseInsertDto
             {
-                // If the creator is also a weighted user, we don't want to add an expense for him
-                if (userId == createdByGuidId) continue;
-
-                var amountDue = totalAmount * userWeight / totalWeight;
-                if (Math.Round(amountDue, 2) != amountDue)
-                    throw new Exception(
-                        $"The amount due for user {userId} is not a multiple of 0.01 (got {amountDue})");
-                userExpenses.Add(new UserExpenseInsertDto
-                {
-                    ExpenseId = expense.Id,
-                    UserId = userId,
-                    Amount = amountDue
-                });
-            }
-
-            var insertedUserExpenses = await userExpenseRepository.InsertManyAsync(userExpenses);
-
-            await transaction.CommitAsync();
-
-            return insertedUserExpenses;
+                ExpenseId = currentExpense.Id,
+                UserId = guid,
+                Amount = amount
+            });
         }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
+
+        return await userExpenseRepository.InsertManyAsync(userExpenses);
     }
+
+    // [Authorize]
+    // public async Task<ICollection<UserExpense?>> AddUserExpensesDefaultWeights(
+    //     [FromServices] IUserExpenseRepository userExpenseRepository,
+    //     [FromServices] IExpenseRepository expenseRepository,
+    //     [FromServices] IUserGroupRepository userGroupRepository,
+    //     [FromServices] IHttpContextAccessor httpContextAccessor,
+    //     ExpenseInsertInputDefault expenseInsertInputDefault)
+    // {
+    //     var createdByIdString = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    //     if (createdByIdString == null) throw new Exception("User not found");
+    //
+    //     var createdById = Guid.Parse(createdByIdString);
+    //     var expenseInsertDto = expenseInsertInputDefault.ToExpenseInsertDto(createdById);
+    //
+    //     if (await userGroupRepository.AreUsersInGroup(expenseInsertDto.GroupId,
+    //             expenseInsertDto.WeightedUsers.Select(x => x.Key)) == false)
+    //         throw new Exception("Not all the weighted users are in the group");
+    //
+    //     var totalWeight = expenseInsertDto.WeightedUsers.Count;
+    //     var totalAmount = expenseInsertInputDefault.Amount;
+    //
+    //     var creatorWeightedUser = expenseInsertDto.WeightedUsers.FirstOrDefault(x => x.Key == createdById);
+    //     if (creatorWeightedUser.Key != default)
+    //     {
+    //         // The creator is also a weighted user, we need to remove him from the weighted users and adjust the total amount
+    //         // In this case, the creator has been checked to be in the group
+    //         totalAmount -= expenseInsertDto.Amount * creatorWeightedUser.Value / totalWeight;
+    //         totalWeight -= 1;
+    //         expenseInsertDto.WeightedUsers.Remove(creatorWeightedUser);
+    //     }
+    //     else
+    //     {
+    //         // the creator is not a weighted user, we need to check if he is in the group
+    //         if (await userGroupRepository.IsUserInGroup(createdById, expenseInsertDto.GroupId) == false)
+    //             throw new Exception("The creator is not in the group");
+    //     }
+    //
+    //     await using var transaction = await expenseRepository.BeginTransactionAsync();
+    //     try
+    //     {
+    //         var userExpenses = new List<UserExpenseInsertDto>();
+    //         var amountDue = totalAmount / totalWeight;
+    //         amountDue = Math.Round(amountDue, 2);
+    //         totalAmount = amountDue * totalWeight;
+    //
+    //         expenseInsertDto.Amount = totalAmount;
+    //
+    //         var expense = await expenseRepository.InsertAsync(expenseInsertDto);
+    //         if (expense == null) throw new Exception("Failed to insert expense");
+    //
+    //         foreach (var (userId, userWeight) in expenseInsertDto.WeightedUsers)
+    //         {
+    //             // If the creator is also a weighted user, we don't want to add an expense for him
+    //             if (userId == createdById) continue;
+    //
+    //             userExpenses.Add(new UserExpenseInsertDto
+    //             {
+    //                 ExpenseId = expense.Id,
+    //                 UserId = userId,
+    //                 Amount = amountDue
+    //             });
+    //         }
+    //
+    //         var insertedUserExpenses = await userExpenseRepository.InsertManyAsync(userExpenses);
+    //
+    //         await transaction.CommitAsync();
+    //
+    //         return insertedUserExpenses;
+    //     }
+    //     catch
+    //     {
+    //         await transaction.RollbackAsync();
+    //         throw;
+    //     }
+    // }
+
+    // [Authorize]
+    // public async Task<ICollection<UserExpense?>> AddUserExpenses(
+    //     [FromServices] IUserExpenseRepository userExpenseRepository,
+    //     [FromServices] IExpenseRepository expenseRepository,
+    //     [FromServices] IUserGroupRepository userGroupRepository,
+    //     [FromServices] IHttpContextAccessor httpContextAccessor,
+    //     ExpenseInsertInput expenseInsertInput
+    // )
+    // {
+    //     var createdByStringId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    //     // Cheking if the logged in user exists
+    //     if (createdByStringId == null) throw new Exception("User not found");
+    //
+    //     var createdByGuidId = Guid.Parse(createdByStringId);
+    //     var expenseInsertDto = expenseInsertInput.ToExpenseInsertDto(createdByGuidId);
+    //
+    //     // Checks if all the weighted users are in the group
+    //     if (await userGroupRepository.AreUsersInGroup(expenseInsertDto.GroupId,
+    //             expenseInsertDto.WeightedUsers.Select(x => x.Key)) == false)
+    //         throw new Exception("Not all the weighted users are in the group");
+    //
+    //     var totalWeight = expenseInsertInput.WeightedUsers.Sum(x => x.Value);
+    //     var totalAmount = expenseInsertInput.Amount;
+    //
+    //     // Handle the case where the creator is also a weighted user
+    //     var creatorWeightedUser = expenseInsertDto.WeightedUsers.FirstOrDefault(x => x.Key == createdByGuidId);
+    //     if (creatorWeightedUser.Key != default)
+    //     {
+    //         // The creator is also a weighted user, we need to remove him from the weighted users and adjust the total amount
+    //         // In this case, the creator has been checked to be in the group
+    //         totalAmount -= expenseInsertDto.Amount * creatorWeightedUser.Value / totalWeight;
+    //         totalWeight -= creatorWeightedUser.Value;
+    //         expenseInsertDto.WeightedUsers.Remove(creatorWeightedUser);
+    //     }
+    //     else
+    //     {
+    //         // the creator is not a weighted user, we need to check if he is in the group
+    //         if (await userGroupRepository.IsUserInGroup(createdByGuidId, expenseInsertDto.GroupId) == false)
+    //             throw new Exception("The creator is not in the group");
+    //     }
+    //
+    //     await using var transaction = await expenseRepository.BeginTransactionAsync();
+    //     try
+    //     {
+    //         var expense = await expenseRepository.InsertAsync(expenseInsertDto);
+    //         if (expense == null) return [];
+    //
+    //         var userExpenses = new List<UserExpenseInsertDto>();
+    //
+    //         foreach (var (userId, userWeight) in expenseInsertDto.WeightedUsers)
+    //         {
+    //             // If the creator is also a weighted user, we don't want to add an expense for him
+    //             if (userId == createdByGuidId) continue;
+    //
+    //             var amountDue = totalAmount * userWeight / totalWeight;
+    //             if (Math.Round(amountDue, 2) != amountDue)
+    //                 throw new Exception(
+    //                     $"The amount due for user {userId} is not a multiple of 0.01 (got {amountDue})");
+    //             userExpenses.Add(new UserExpenseInsertDto
+    //             {
+    //                 ExpenseId = expense.Id,
+    //                 UserId = userId,
+    //                 Amount = amountDue
+    //             });
+    //         }
+    //
+    //         var insertedUserExpenses = await userExpenseRepository.InsertManyAsync(userExpenses);
+    //
+    //         await transaction.CommitAsync();
+    //
+    //         return insertedUserExpenses;
+    //     }
+    //     catch
+    //     {
+    //         await transaction.RollbackAsync();
+    //         throw;
+    //     }
+    // }
 
     [Authorize]
     public async Task<string> UploadExpenseJustification(Guid expenseId,

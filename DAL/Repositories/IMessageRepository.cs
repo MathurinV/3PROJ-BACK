@@ -15,5 +15,5 @@ public interface IMessageRepository
     Task<Message?> InsertAsync(MessageInsertDto messageInsertDto);
 
     IQueryable<Message?> GetMessageById(Guid messageId);
-    IQueryable<Message> GetMessagesByOtherUserId(Guid currentUserId, Guid otherUserId);
+    Task<List<Message>> GetMessagesByOtherUserId(Guid currentUserId, Guid otherUserId);
 }
