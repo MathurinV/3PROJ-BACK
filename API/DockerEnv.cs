@@ -43,6 +43,12 @@ public static class DockerEnv
     public static string FtpAvatarsPassword { get; } = Environment.GetEnvironmentVariable("FTP_AVATARS_PASS") ??
                                                        throw new Exception("FTP_AVATARS_PASS is not set");
 
+    public static string FtpGroupsImagesUser { get; } = Environment.GetEnvironmentVariable("FTP_GROUPS_USER") ??
+                                                        throw new Exception("FTP_GROUPS_USER is not set");
+
+    public static string FtpGroupsImagesPassword { get; } = Environment.GetEnvironmentVariable("FTP_GROUPS_PASS") ??
+                                                            throw new Exception("FTP_GROUPS_PASS is not set");
+
     public static string ConnectionString { get; } =
         $"Host=db;Port={DbPort};Database={PostgresDb};Username={PostgresUser};Password={PostgresPassword}";
 }

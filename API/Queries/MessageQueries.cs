@@ -14,12 +14,11 @@ public class MessageQueries
         [FromServices] IMessageRepository messageRepository, [FromServices] IUserRepository userRepository,
         Guid otherUserId)
     {
-        var userIdString = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (userIdString == null) throw new Exception("Issue with getting user id");
+        var userIdString = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
+                           throw new Exception("User not found");
         var userId = Guid.Parse(userIdString);
-        var currentUser = await userRepository.GetByIdAsync(userId);
-        var otherUser = await userRepository.GetByIdAsync(otherUserId);
-        if (currentUser == null || otherUser == null) throw new Exception("User not found");
+        var currentUser = await userRepository.GetByIdAsync(userId) ?? throw new Exception("User not found");
+        var otherUser = await userRepository.GetByIdAsync(otherUserId) ?? throw new Exception("User not found");
         return await messageRepository.GetMessagesByOtherUserId(userId, otherUserId);
     }
 }

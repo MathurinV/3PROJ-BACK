@@ -1,3 +1,4 @@
+using DAL;
 using DAL.Models.Groups;
 using DAL.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,16 @@ public class GroupRepository(MoneyMinderDbContext context) : IGroupRepository
         await context.Groups.AddAsync(group);
         await context.SaveChangesAsync();
         return group;
+    }
+
+    public async Task<bool> ChangeGroupImageExtensionAsync(Guid groupId,
+        ImageFileTypes.ValidImageExtensions? newExtension)
+    {
+        var group = await context.Groups.FindAsync(groupId);
+        if (group == null) throw new Exception("User not found");
+        group.ImageExtension = newExtension;
+        await context.SaveChangesAsync();
+        return true;
     }
 
     public async Task<Group?> GetByIdAsync(Guid currentGroupId)

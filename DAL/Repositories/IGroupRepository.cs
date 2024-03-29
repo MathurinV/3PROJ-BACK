@@ -30,4 +30,6 @@ public interface IGroupRepository
     /// <param name="groupInsertDto">The GroupInsertDto object containing the group information to insert.</param>
     /// <returns>The inserted group object if successful, or null if an error occurred.</returns>
     Task<Group?> InsertAsync(GroupInsertDto groupInsertDto);
+
+    public Task<bool> ChangeGroupImageExtensionAsync(Guid groupId, ImageFileTypes.ValidImageExtensions? newExtension);
 }

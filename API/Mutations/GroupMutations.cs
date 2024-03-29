@@ -6,6 +6,7 @@ using DAL.Repositories;
 using HotChocolate.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace API.Mutations;
 
@@ -47,5 +48,31 @@ public class GroupMutations
         if (Guid.Parse(userId) == invitationInsertDto.UserId) throw new Exception("You can't invite yourself ???");
 
         return await invitationRepository.InsertAsync(invitationInsertDto);
+    }
+
+    [Authorize]
+    public async Task<string> UploadGroupImagePicture(Guid groupId,
+        [FromServices] IUserRepository userRepository,
+        [FromServices] IGroupRepository groupRepository,
+        [FromServices] IHttpContextAccessor httpContextAccessor,
+        [FromServices] IDistributedCache distributedCache)
+    {
+        var userIdString = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
+                           throw new Exception("User not found");
+        var userId = Guid.Parse(userIdString);
+
+        var group = await groupRepository.GetByIdAsync(groupId) ?? throw new Exception("Group not found");
+        var user = await userRepository.GetByIdAsync(userId) ?? throw new Exception("User not found");
+
+        if (group.OwnerId != user.Id) throw new Exception("You are not the owner of this group");
+
+        var token = Guid.NewGuid().ToString();
+        await distributedCache.SetStringAsync(token, groupId.ToString(), new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+        });
+        var baseUrl = $"http://localhost:{DockerEnv.ApiPort}";
+
+        return $"{baseUrl}/groupimages/{token}";
     }
 }

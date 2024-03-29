@@ -25,8 +25,8 @@ public class UserQueries
     public IQueryable<AppUser?> GetCurrentUser([Service] IUserRepository userRepository,
         [FromServices] IHttpContextAccessor httpContextAccessor)
     {
-        var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (userId == null) throw new Exception("Issue with getting user id");
+        var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
+                     throw new Exception("User not found");
         return userRepository.GetById(Guid.Parse(userId));
     }
 

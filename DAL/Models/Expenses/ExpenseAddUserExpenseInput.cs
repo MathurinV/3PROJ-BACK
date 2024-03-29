@@ -15,7 +15,7 @@ public class ExpenseAddUserExpenseInput
             Amount = amount,
             Description = Description,
             CreatedById = CreatedById,
-            GroupId = GroupId,
+            GroupId = GroupId
         };
     }
 }

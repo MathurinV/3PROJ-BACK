@@ -9,36 +9,36 @@ namespace API.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class AvatarsController : ControllerBase
+public class GroupImagesController : ControllerBase
 {
     [HttpPost("{token}")]
-    public async Task<ActionResult<FtpStatus>> PostAvatar(string token,
+    public async Task<ActionResult<FtpStatus>> PostGroupImage(string token,
         [FromForm] IFormFile file,
         [FromServices] IDistributedCache distributedCache,
-        [FromServices] IUserRepository userRepository)
+        [FromServices] IGroupRepository groupRepository)
     {
-        var userIdString = await distributedCache.GetStringAsync(token) ?? throw new Exception("Token not found");
+        var groupIdString = await distributedCache.GetStringAsync(token) ?? throw new Exception("Token not found");
 
-        var userId = Guid.Parse(userIdString);
-        var user = await userRepository.GetByIdAsync(userId) ?? throw new Exception("User not found");
+        var groupId = Guid.Parse(groupIdString);
+        var group = await groupRepository.GetByIdAsync(groupId) ?? throw new Exception("Group not found");
 
         var fileExtension = Path.GetExtension(file.FileName);
         var validFileExtension = ImageFileTypes.StringToValidImageExtension(fileExtension);
 
-        var ftpClient = new AsyncFtpClient("ftp", DockerEnv.FtpAvatarsUser, DockerEnv.FtpAvatarsPassword);
+        var ftpClient = new AsyncFtpClient("ftp", DockerEnv.FtpGroupsImagesUser, DockerEnv.FtpGroupsImagesPassword);
         await ftpClient.AutoConnect();
 
-        if (user.AvatarExtension != null)
+        if (group.ImageExtension != null)
         {
             var fileNameWithExtensionToDelete =
-                $"{userIdString}{ImageFileTypes.ValidImageExtensionToString(user.AvatarExtension)}";
+                $"{groupIdString}{ImageFileTypes.ValidImageExtensionToString(group.ImageExtension)}";
             await ftpClient.DeleteFile(fileNameWithExtensionToDelete);
-            await userRepository.ChangeAvatarExtensionAsync(userId, null);
+            await groupRepository.ChangeGroupImageExtensionAsync(groupId, null);
         }
 
         var stream = file.OpenReadStream();
         var fileNameWithExtension =
-            $"{userIdString}{ImageFileTypes.ValidImageExtensionToString(validFileExtension)}";
+            $"{groupIdString}{ImageFileTypes.ValidImageExtensionToString(validFileExtension)}";
         var status = await ftpClient.UploadStream(stream, fileNameWithExtension);
 
         await ftpClient.Disconnect();
@@ -48,7 +48,7 @@ public class AvatarsController : ControllerBase
             case FtpStatus.Failed:
                 return BadRequest("Failed to upload file");
             case FtpStatus.Success:
-                await userRepository.ChangeAvatarExtensionAsync(userId,
+                await groupRepository.ChangeGroupImageExtensionAsync(groupId,
                     ImageFileTypes.StringToValidImageExtension(fileExtension));
                 return Ok("File uploaded successfully");
             default:
@@ -57,17 +57,17 @@ public class AvatarsController : ControllerBase
     }
 
     [HttpGet("{fileName}")]
-    public async Task<IActionResult> GetAvatar(string fileName,
-        [FromServices] IUserRepository userRepository)
+    public async Task<IActionResult> GetGroupImage(string fileName,
+        [FromServices] IGroupRepository groupRepository)
     {
-        var userIdString = fileName.Split('.')[0];
-        var user = await userRepository.GetByIdAsync(Guid.Parse(userIdString));
-        if (user == null) return NotFound($"User with ID {userIdString} not found");
+        var groupIdString = fileName.Split('.')[0];
+        var group = await groupRepository.GetByIdAsync(Guid.Parse(groupIdString)) ??
+                    throw new Exception("Group not found");
 
-        var ftpClient = new AsyncFtpClient("ftp", DockerEnv.FtpAvatarsUser, DockerEnv.FtpAvatarsPassword);
+        var ftpClient = new AsyncFtpClient("ftp", DockerEnv.FtpGroupsImagesUser, DockerEnv.FtpGroupsImagesPassword);
         await ftpClient.AutoConnect();
 
-        var fileExtension = user.AvatarExtension;
+        var fileExtension = group.ImageExtension;
         if (fileExtension == null || !await ftpClient.FileExists(fileName)) return NotFound("Avatar not found");
 
         var stream = new MemoryStream();

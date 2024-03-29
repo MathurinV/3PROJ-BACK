@@ -17,14 +17,13 @@ public class ExpenseQueries
         [FromServices] IUserGroupRepository userGroupRepository,
         ExpensePrevisualizationInput expensePrevisualizationInput)
     {
-        var creatorStringId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (creatorStringId == null) throw new Exception("Could not find user");
+        var creatorStringId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
+                              throw new Exception("User not found");
         var creatorId = Guid.Parse(creatorStringId);
-        var creator = await userRepository.GetByIdAsync(creatorId);
-        if (creator == null) throw new Exception("Creator not found");
+        var creator = await userRepository.GetByIdAsync(creatorId) ?? throw new Exception("User not found");
 
-        var group = await groupRepository.GetByIdAsync(expensePrevisualizationInput.GroupId);
-        if (group == null) throw new Exception("Group not found");
+        var group = await groupRepository.GetByIdAsync(expensePrevisualizationInput.GroupId) ??
+                    throw new Exception("Group not found");
 
         var userAmountsList = expensePrevisualizationInput.UserAmountsList;
 

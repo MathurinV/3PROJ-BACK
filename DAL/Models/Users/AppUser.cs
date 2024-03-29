@@ -63,54 +63,8 @@ public class AppUser : IdentityUser<Guid>
 
     [NotMapped]
     public string? AvatarUrl => AvatarExtension != null
-        ? $"http://localhost:3000/avatars/{Id}{AvatarFileTypes.ValidAvatarExtensionToString(AvatarExtension)}"
+        ? $"http://localhost:3000/avatars/{Id}{ImageFileTypes.ValidImageExtensionToString(AvatarExtension)}"
         : null;
 
-    [GraphQLIgnore] public AvatarFileTypes.ValidAvatarExtensions? AvatarExtension { get; set; }
-}
-
-public class AvatarFileTypes
-{
-    public enum ValidAvatarExtensions
-    {
-        Jpg,
-        Png,
-        Jpeg
-    }
-
-    public static string ValidAvatarExtensionToString(
-        ValidAvatarExtensions? validAvatarExtensions)
-    {
-        return validAvatarExtensions switch
-        {
-            ValidAvatarExtensions.Jpg => ".jpg",
-            ValidAvatarExtensions.Png => ".png",
-            ValidAvatarExtensions.Jpeg => ".jpeg",
-            _ => throw new ArgumentOutOfRangeException(nameof(validAvatarExtensions),
-                validAvatarExtensions, null)
-        };
-    }
-
-    public static ValidAvatarExtensions StringToValidAvatarExtension(string avatarExtension)
-    {
-        return avatarExtension switch
-        {
-            ".jpg" => ValidAvatarExtensions.Jpg,
-            ".png" => ValidAvatarExtensions.Png,
-            ".jpeg" => ValidAvatarExtensions.Jpeg,
-            _ => throw new ArgumentOutOfRangeException(nameof(avatarExtension), avatarExtension, null)
-        };
-    }
-
-    public static string ValidAvatarExtensionsMimeType(ValidAvatarExtensions? validAvatarExtensions)
-    {
-        return validAvatarExtensions switch
-        {
-            ValidAvatarExtensions.Jpg => "image/jpeg",
-            ValidAvatarExtensions.Png => "image/png",
-            ValidAvatarExtensions.Jpeg => "image/jpeg",
-            _ => throw new ArgumentOutOfRangeException(nameof(validAvatarExtensions),
-                validAvatarExtensions, null)
-        };
-    }
+    [GraphQLIgnore] public ImageFileTypes.ValidImageExtensions? AvatarExtension { get; set; }
 }

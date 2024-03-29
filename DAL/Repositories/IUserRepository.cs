@@ -82,5 +82,5 @@ public interface IUserRepository
     Task<AppUser?> GetByIdAsync(Guid userId);
 
     Task<bool> ChangeAvatarExtensionAsync(Guid userId,
-        AvatarFileTypes.ValidAvatarExtensions? newExtension);
+        ImageFileTypes.ValidImageExtensions? newExtension);
 }

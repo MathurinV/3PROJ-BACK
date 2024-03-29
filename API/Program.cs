@@ -111,6 +111,7 @@ public static class Program
             .AddSubscriptionType(d => d.Name("Subscription"))
             .AddTypeExtension<MessageSubscriptions>()
             .AddType<AppUserType>()
+            .AddType<GroupType>()
             .AddFiltering()
             .AddSorting()
             .AddProjections()

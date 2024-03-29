@@ -20,4 +20,9 @@ public class Group
     public ICollection<GroupMessage> ReceivedGroupMessages { get; set; } = new List<GroupMessage>();
     public ICollection<Expense> Expenses { get; set; } = new List<Expense>();
     public ICollection<Invitation> Invitations { get; set; } = new List<Invitation>();
+    [GraphQLIgnore] public ImageFileTypes.ValidImageExtensions? ImageExtension { get; set; }
+
+    public string? GroupImageUrl => ImageExtension != null
+        ? $"http://localhost:3000/groupimages/{Id}{ImageFileTypes.ValidImageExtensionToString(ImageExtension)}"
+        : null;
 }

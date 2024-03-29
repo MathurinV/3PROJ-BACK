@@ -41,10 +41,11 @@ public class UnitTest1
         }}";
         addUserExpenseMutation = addUserExpenseMutation.Replace("\"key\"", "key");
         addUserExpenseMutation = addUserExpenseMutation.Replace("\"value\"", "value");
-        
+
         var addUserExpenseMutationObject = new { query = addUserExpenseMutation };
         var serializedAddUserExpenseMutation = JsonConvert.SerializeObject(addUserExpenseMutationObject);
-        var addUserExpenseContent = new StringContent(serializedAddUserExpenseMutation, Encoding.UTF8, "application/json");
+        var addUserExpenseContent =
+            new StringContent(serializedAddUserExpenseMutation, Encoding.UTF8, "application/json");
         var addUserExpenseResponse = _client.PostAsync(GraphQlUrl, addUserExpenseContent).Result;
         var addUserExpenseResponseString = addUserExpenseResponse.Content.ReadAsStringAsync().Result;
         _testOutputHelper.WriteLine(addUserExpenseResponseString);
@@ -59,18 +60,17 @@ public class UnitTest1
             .RuleFor(epi => epi.Description, f => f.Lorem.Sentence())
             .RuleFor(epi => epi.GroupId, f => groupId)
             .RuleFor(epi => epi.Amount, f => f.Random.Decimal(1, 1000))
-            .RuleFor(epi => epi.UserAmountsList, f => userGuids.Select(ug => new KeyValuePair<Guid, decimal?>(ug, null)).ToList());
-        
+            .RuleFor(epi => epi.UserAmountsList,
+                f => userGuids.Select(ug => new KeyValuePair<Guid, decimal?>(ug, null)).ToList());
+
         var currentPrevisualizeExpense = previsualizeExpenseFaker.Generate();
 
         var userAmountsListString = "[";
         foreach (var userAmount in currentPrevisualizeExpense.UserAmountsList)
-        {
             userAmountsListString += $"{{key: \"{userAmount.Key}\" }},";
-        }
         userAmountsListString = userAmountsListString.Remove(userAmountsListString.Length - 1);
         userAmountsListString += "]";
-        
+
         var previsualizeEpenseQuery = $@"
             {{previsualizeUserExpenses(expensePrevisualizationInput: {{
                 amount:{currentPrevisualizeExpense.Amount}
@@ -81,10 +81,11 @@ public class UnitTest1
                 key
                 value
             }}}}";
-        
+
         var previsualizeExpenseObject = new { query = previsualizeEpenseQuery };
         var serializedPrevisualizeExpense = JsonConvert.SerializeObject(previsualizeExpenseObject);
-        var previsualizeExpenseContent = new StringContent(serializedPrevisualizeExpense, Encoding.UTF8, "application/json");
+        var previsualizeExpenseContent =
+            new StringContent(serializedPrevisualizeExpense, Encoding.UTF8, "application/json");
         var previsualizeExpenseResponse = _client.PostAsync(GraphQlUrl, previsualizeExpenseContent).Result;
         var previsualizeExpenseResponseString = previsualizeExpenseResponse.Content.ReadAsStringAsync().Result;
         _testOutputHelper.WriteLine(previsualizeExpenseResponseString);
@@ -92,7 +93,7 @@ public class UnitTest1
         var previsualizeExpense = previsualizeExpenseJsonResponse["data"]?["previsualizeUserExpenses"];
         return previsualizeExpense?.ToString();
     }
-    
+
     private string? SendMessage(Guid receiverId)
     {
         var messageFaker = new Faker<MessageInsertInput>()
@@ -298,7 +299,7 @@ public class UnitTest1
 
         var previsualize = PrevisualizeExpense(usersIds, Guid.Parse(groupId.ToString())!);
         Assert.NotNull(previsualize);
-        
+
         var addExpense = AddExpense(Guid.Parse(groupId.ToString())!, previsualize!);
         Assert.NotNull(addExpense);
 

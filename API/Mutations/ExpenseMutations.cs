@@ -29,9 +29,9 @@ public class ExpenseMutations
         var user = await userRepository.GetByIdAsync(userId) ?? throw new Exception("User not found");
 
         var guidAmountsList = expenseInsertInput.UsersWithAmount;
-        
+
         var expenseInsertDto = expenseInsertInput.ToExpenseInsertDto(userId);
-        
+
         var userIds = guidAmountsList.Select(x => x.Key).ToList();
         if (!await userGroupRepository.AreUsersInGroup(expenseInsertDto.GroupId, userIds))
             throw new Exception("All users are not in the group");
@@ -43,14 +43,12 @@ public class ExpenseMutations
 
         var userExpenses = new List<UserExpenseInsertDto>();
         foreach (var (guid, amount) in guidAmountsList)
-        {
             userExpenses.Add(new UserExpenseInsertDto
             {
                 ExpenseId = currentExpense.Id,
                 UserId = guid,
                 Amount = amount
             });
-        }
 
         return await userExpenseRepository.InsertManyAsync(userExpenses);
     }
