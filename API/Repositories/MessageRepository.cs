@@ -19,9 +19,9 @@ public class MessageRepository(MoneyMinderDbContext context) : IMessageRepositor
         return context.Messages.Where(x => x.Id == messageId);
     }
 
-    public Task<List<Message>> GetMessagesByOtherUserId(Guid currentUserId, Guid otherUserId)
+    public IQueryable<Message> GetMessagesByOtherUserId(Guid currentUserId, Guid otherUserId)
     {
         return context.Messages.Where(x => (x.SenderId == currentUserId && x.ReceiverId == otherUserId) ||
-                                           (x.SenderId == otherUserId && x.ReceiverId == currentUserId)).ToListAsync();
+                                           (x.SenderId == otherUserId && x.ReceiverId == currentUserId));
     }
 }

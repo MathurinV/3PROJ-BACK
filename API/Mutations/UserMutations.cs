@@ -140,7 +140,7 @@ public class UserMutations
         var userIdString = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (userIdString == null) throw new Exception("User not found");
         var userId = Guid.Parse(userIdString);
-
+        
         var token = Guid.NewGuid().ToString();
         await distributedCache.SetStringAsync(token, userIdString, new DistributedCacheEntryOptions
         {
