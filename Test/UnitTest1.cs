@@ -41,7 +41,6 @@ public class UnitTest1
         }}";
         addUserExpenseMutation = addUserExpenseMutation.Replace("\"key\"", "key");
         addUserExpenseMutation = addUserExpenseMutation.Replace("\"value\"", "value");
-
         var addUserExpenseMutationObject = new { query = addUserExpenseMutation };
         var serializedAddUserExpenseMutation = JsonConvert.SerializeObject(addUserExpenseMutationObject);
         var addUserExpenseContent =
