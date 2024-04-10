@@ -17,32 +17,86 @@ public class ExpenseMutations
         ExpenseInsertInput expenseInsertInput,
         [FromServices] IUserGroupRepository userGroupRepository,
         [FromServices] IUserRepository userRepository,
+        [FromServices] IGroupRepository groupRepository,
         [FromServices] IUserExpenseRepository userExpenseRepository,
         [FromServices] IExpenseRepository expenseRepository,
         [FromServices] IHttpContextAccessor httpContextAccessor
     )
     {
-        var userIdString = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
-                           throw new Exception("User not found");
+        var creatorStringId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
+                              throw new Exception("User not found");
+        var creatorId = Guid.Parse(creatorStringId);
+        var creator = await userRepository.GetByIdAsync(creatorId) ?? throw new Exception("User not found");
 
-        var userId = Guid.Parse(userIdString);
-        var user = await userRepository.GetByIdAsync(userId) ?? throw new Exception("User not found");
+        var group = await groupRepository.GetByIdAsync(expenseInsertInput.GroupId) ??
+                    throw new Exception("Group not found");
 
-        var guidAmountsList = expenseInsertInput.UsersWithAmount;
+        var userAmountsList = expenseInsertInput.UserAmountsList;
 
-        var expenseInsertDto = expenseInsertInput.ToExpenseInsertDto(userId);
+        // Checks if all the weighted users are in the group
+        if (!await userGroupRepository.AreUsersInGroup(expenseInsertInput.GroupId,
+                userAmountsList.Select(x => x.Key)))
+            throw new Exception("Not all the weighted users are in the group");
 
-        var userIds = guidAmountsList.Select(x => x.Key).ToList();
+        // var creatorInUserAmountsList =
+        //     userAmountsList.FirstOrDefault(x => x.Key == creatorId);
+
+        var totalAmount = Math.Round(expenseInsertInput.Amount, 2);
+        var numberOfUsersWithoutSpecifiedAmount = 0;
+        var userIdsWithoutSpecifiedAmount = new List<Guid>();
+
+        var userIdsWithAmounts = new List<KeyValuePair<Guid, decimal>>();
+
+        foreach (var keyValuePair in userAmountsList)
+            if (keyValuePair.Value.HasValue)
+            {
+                var currentUserAmount = Math.Round(keyValuePair.Value.Value, 2);
+                userIdsWithAmounts.Add(new KeyValuePair<Guid, decimal>(keyValuePair.Key, currentUserAmount));
+                totalAmount -= currentUserAmount;
+                if (totalAmount < 0)
+                    throw new Exception("The sum of all the users' amounts is greater than the total amount");
+            }
+            else
+            {
+                numberOfUsersWithoutSpecifiedAmount += 1;
+                userIdsWithoutSpecifiedAmount.Add(keyValuePair.Key);
+            }
+
+        var newTotalAmount = decimal.Zero;
+        // At this point, the list of users has been explored, and we know the amount left to be paid by the users without a specified amount
+        if (numberOfUsersWithoutSpecifiedAmount > 0)
+        {
+            var toBePaidByUserAmount = Math.Round(totalAmount / numberOfUsersWithoutSpecifiedAmount, 2);
+            foreach (var id in userIdsWithoutSpecifiedAmount)
+            {
+                userIdsWithAmounts.Add(new KeyValuePair<Guid, decimal>(id, toBePaidByUserAmount));
+                newTotalAmount += toBePaidByUserAmount;
+            }
+        }
+
+        // Removes the expense creator from the list if he is included in the expensePrevisualizationInput
+        var isCreatorInUserIdsWithAmounts = userIdsWithAmounts.FirstOrDefault(x => x.Key == creatorId);
+        // /!\
+        if (isCreatorInUserIdsWithAmounts.Key != default)
+        {
+            userIdsWithAmounts.Remove(isCreatorInUserIdsWithAmounts);
+            newTotalAmount += isCreatorInUserIdsWithAmounts.Value;
+        }
+
+        ///
+
+        var expenseInsertDto = expenseInsertInput.ToExpenseInsertDto(creatorId);
+
+        var userIds = userIdsWithAmounts.Select(x => x.Key).ToList();
         if (!await userGroupRepository.AreUsersInGroup(expenseInsertDto.GroupId, userIds))
             throw new Exception("All users are not in the group");
 
-        var totalAmount = guidAmountsList.Sum(x => x.Value);
-        expenseInsertDto.Amount = totalAmount;
+        expenseInsertDto.Amount = newTotalAmount;
         var currentExpense = await expenseRepository.InsertAsync(expenseInsertDto) ??
                              throw new Exception("Failed to insert expense");
 
         var userExpenses = new List<UserExpenseInsertDto>();
-        foreach (var (guid, amount) in guidAmountsList)
+        foreach (var (guid, amount) in userIdsWithAmounts)
             userExpenses.Add(new UserExpenseInsertDto
             {
                 ExpenseId = currentExpense.Id,

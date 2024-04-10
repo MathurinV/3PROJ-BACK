@@ -23,24 +23,31 @@ public class UnitTest1
 
     public static string GraphQlUrl { get; } = "http://localhost:3000/graphql";
 
-    private string? AddExpense(Guid groupId, string previzualisation)
+    private string? AddExpense(ExpensePrevisualizationInput expensePrevisualizationInput)
     {
         var fakeDescription = new Faker().Lorem.Sentence();
+
+        var userAmountsListString = "[";
+        foreach (var userAmount in expensePrevisualizationInput.UserAmountsList)
+            userAmountsListString += $"{{key: \"{userAmount.Key}\" }},";
+        userAmountsListString = userAmountsListString.Remove(userAmountsListString.Length - 1);
+        userAmountsListString += "]";
+
         var addUserExpenseMutation = @"
         mutation {
             addUserExpense(
                 expenseInsertInput: {
+                    amount: " + expensePrevisualizationInput.Amount + @",
                     description: """ + fakeDescription + @""",
-                    groupId: """ + groupId + $@""",
-                    usersWithAmount: {previzualisation}
+                    groupId: """ + expensePrevisualizationInput.GroupId + $@""",
+                    userAmountsList: {userAmountsListString}
                 }}
             ) {{
                 amount
                 paidAt
             }}
         }}";
-        addUserExpenseMutation = addUserExpenseMutation.Replace("\"key\"", "key");
-        addUserExpenseMutation = addUserExpenseMutation.Replace("\"value\"", "value");
+
         var addUserExpenseMutationObject = new { query = addUserExpenseMutation };
         var serializedAddUserExpenseMutation = JsonConvert.SerializeObject(addUserExpenseMutationObject);
         var addUserExpenseContent =
@@ -53,28 +60,18 @@ public class UnitTest1
         return amount?.ToString();
     }
 
-    private string? PrevisualizeExpense(List<Guid> userGuids, Guid groupId)
+    private string? PrevisualizeExpense(ExpensePrevisualizationInput expensePrevisualizationInput)
     {
-        var previsualizeExpenseFaker = new Faker<ExpensePrevisualizationInput>()
-            .RuleFor(epi => epi.Description, f => f.Lorem.Sentence())
-            .RuleFor(epi => epi.GroupId, f => groupId)
-            .RuleFor(epi => epi.Amount, f => f.Random.Decimal(1, 1000))
-            .RuleFor(epi => epi.UserAmountsList,
-                f => userGuids.Select(ug => new KeyValuePair<Guid, decimal?>(ug, null)).ToList());
-
-        var currentPrevisualizeExpense = previsualizeExpenseFaker.Generate();
-
         var userAmountsListString = "[";
-        foreach (var userAmount in currentPrevisualizeExpense.UserAmountsList)
+        foreach (var userAmount in expensePrevisualizationInput.UserAmountsList)
             userAmountsListString += $"{{key: \"{userAmount.Key}\" }},";
         userAmountsListString = userAmountsListString.Remove(userAmountsListString.Length - 1);
         userAmountsListString += "]";
 
         var previsualizeEpenseQuery = $@"
             {{previsualizeUserExpenses(expensePrevisualizationInput: {{
-                amount:{currentPrevisualizeExpense.Amount}
-                description:""{currentPrevisualizeExpense.Description}""
-                groupId:""{groupId}""
+                amount:{expensePrevisualizationInput.Amount}
+                groupId:""{expensePrevisualizationInput.GroupId}""
                 userAmountsList: {userAmountsListString}
             }}){{
                 key
@@ -296,10 +293,22 @@ public class UnitTest1
         loginStatus = SignIn(users[0].UserName, users[0].Password, false);
         Assert.True(loginStatus != null && bool.Parse(loginStatus));
 
-        var previsualize = PrevisualizeExpense(usersIds, Guid.Parse(groupId.ToString())!);
+        var userAmountsList = new List<KeyValuePair<Guid, decimal?>>();
+        foreach (var userId in usersIds) userAmountsList.Add(new KeyValuePair<Guid, decimal?>(userId, null));
+        
+        var randomAmount = new Faker().Finance.Amount();
+
+        var fakeExpense = new ExpensePrevisualizationInput
+        {
+            GroupId = Guid.Parse(groupId.ToString()),
+            Amount = randomAmount,
+            UserAmountsList = userAmountsList
+        };
+
+        var previsualize = PrevisualizeExpense(fakeExpense);
         Assert.NotNull(previsualize);
 
-        var addExpense = AddExpense(Guid.Parse(groupId.ToString())!, previsualize!);
+        var addExpense = AddExpense(fakeExpense);
         Assert.NotNull(addExpense);
 
         // creates new messages
