@@ -27,7 +27,7 @@ public class AppUser : IdentityUser<Guid>
 
     /// <summary>
     ///     Gets or sets the collection of owned groups by the user. Default value is an empty list.
-    /// </summary>
+    /// </summary>z
     public ICollection<Group> OwnedGroups { get; set; } = new List<Group>();
 
     /// <summary>

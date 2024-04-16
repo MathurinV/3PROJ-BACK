@@ -1,3 +1,4 @@
+using API.Utilities;
 using DAL;
 using DAL.Repositories;
 using FluentFTP;
@@ -12,44 +13,21 @@ namespace API.Controllers;
 public class AvatarsController : ControllerBase
 {
     [HttpPost("{token}")]
-    public async Task<ActionResult<FtpStatus>> PostAvatar(string token,
+    public async Task<ActionResult<FtpStatus>> PostAvatar(
+        string token,
         [FromForm] IFormFile file,
         [FromServices] IDistributedCache distributedCache,
-        [FromServices] IUserRepository userRepository)
+        [FromServices] IUserRepository userRepository
+        )
     {
-        var userIdString = await distributedCache.GetStringAsync(token) ?? throw new Exception("Token not found");
-
-        var userId = Guid.Parse(userIdString);
-        var user = await userRepository.GetByIdAsync(userId) ?? throw new Exception("User not found");
-
-        var fileExtension = Path.GetExtension(file.FileName);
-        var validFileExtension = ImageFileTypes.StringToValidImageExtension(fileExtension);
-
-        var ftpClient = new AsyncFtpClient("ftp", DockerEnv.FtpAvatarsUser, DockerEnv.FtpAvatarsPassword);
-        await ftpClient.AutoConnect();
-
-        if (user.AvatarExtension != null)
-        {
-            var fileNameWithExtensionToDelete =
-                $"{userIdString}{ImageFileTypes.ValidImageExtensionToString(user.AvatarExtension)}";
-            await ftpClient.DeleteFile(fileNameWithExtensionToDelete);
-            await userRepository.ChangeAvatarExtensionAsync(userId, null);
-        }
-
-        var stream = file.OpenReadStream();
-        var fileNameWithExtension =
-            $"{userIdString}{ImageFileTypes.ValidImageExtensionToString(validFileExtension)}";
-        var status = await ftpClient.UploadStream(stream, fileNameWithExtension);
-
-        await ftpClient.Disconnect();
-
+        var status = await UploadImage.PostImage(UploadImage.UploadType.Avatar, token, file, distributedCache,
+            userRepository, null, null);
+        
         switch (status)
         {
             case FtpStatus.Failed:
                 return BadRequest("Failed to upload file");
             case FtpStatus.Success:
-                await userRepository.ChangeAvatarExtensionAsync(userId,
-                    ImageFileTypes.StringToValidImageExtension(fileExtension));
                 return Ok("File uploaded successfully");
             default:
                 return BadRequest("Unknown error");

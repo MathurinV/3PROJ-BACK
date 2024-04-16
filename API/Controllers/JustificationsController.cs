@@ -1,3 +1,4 @@
+using API.Utilities;
 using DAL.Models.Expenses;
 using DAL.Repositories;
 using FluentFTP;
@@ -17,42 +18,15 @@ public class JustificationsController : ControllerBase
         [FromServices] IDistributedCache distributedCache,
         [FromServices] IExpenseRepository expenseRepository)
     {
-        var expenseIdString = await distributedCache.GetStringAsync(token);
-        if (expenseIdString == null) return BadRequest("Invalid token");
+        var status = await UploadImage.PostImage(UploadImage.UploadType.Justification, token, file, distributedCache,
+            null, null, expenseRepository);
 
-        var expenseId = Guid.Parse(expenseIdString);
-
-        var expense = await expenseRepository.GetByIdAsync(expenseId);
-        if (expense == null) return NotFound($"Expense with ID {expenseId} not found");
-
-        var fileExtension = Path.GetExtension(file.FileName);
-        var validFileExtension = JustificationFileTypes.StringToValidJustificationExtension(fileExtension);
-
-        var ftpCLient = new AsyncFtpClient("ftp", DockerEnv.FtpJustificationsUser, DockerEnv.FtpJustificationsPassword);
-        await ftpCLient.AutoConnect();
-
-        if (expense.JustificationExtension != null)
-        {
-            var fileNameWithExtensionToDelete =
-                $"{expenseIdString}{JustificationFileTypes.ValidJustificationExtensionToString(expense.JustificationExtension)}";
-            await ftpCLient.DeleteFile(fileNameWithExtensionToDelete);
-            await expenseRepository.ChangeExpenseJustificationExtensionAsync(expenseId, null);
-        }
-
-        var stream = file.OpenReadStream();
-        var fileNameWithExtension =
-            $"{expenseIdString}{JustificationFileTypes.ValidJustificationExtensionToString(validFileExtension)}";
-        var status = await ftpCLient.UploadStream(stream, fileNameWithExtension);
-
-        await ftpCLient.Disconnect();
 
         switch (status)
         {
             case FtpStatus.Failed:
                 return BadRequest("Failed to upload file");
             case FtpStatus.Success:
-                await expenseRepository.ChangeExpenseJustificationExtensionAsync(expenseId,
-                    JustificationFileTypes.StringToValidJustificationExtension(fileExtension));
                 return Ok("File uploaded successfully");
             default:
                 return BadRequest("Unknown error");

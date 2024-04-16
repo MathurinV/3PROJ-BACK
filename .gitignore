@@ -4,6 +4,5 @@ obj/
 /packages/
 riderModule.iml
 /_ReSharper.Caches/
-ftp_data/avatars/*
-ftp_data/justifications/*
+./ftp_data/*
 ./3PROJ-BACK.sln.DotSettings.user

@@ -83,8 +83,6 @@ public class ExpenseMutations
             newTotalAmount += isCreatorInUserIdsWithAmounts.Value;
         }
 
-        ///
-
         var expenseInsertDto = expenseInsertInput.ToExpenseInsertDto(creatorId);
 
         var userIds = userIdsWithAmounts.Select(x => x.Key).ToList();

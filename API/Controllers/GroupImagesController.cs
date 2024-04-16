@@ -1,3 +1,4 @@
+using API.Utilities;
 using DAL;
 using DAL.Repositories;
 using FluentFTP;
@@ -17,39 +18,14 @@ public class GroupImagesController : ControllerBase
         [FromServices] IDistributedCache distributedCache,
         [FromServices] IGroupRepository groupRepository)
     {
-        var groupIdString = await distributedCache.GetStringAsync(token) ?? throw new Exception("Token not found");
-
-        var groupId = Guid.Parse(groupIdString);
-        var group = await groupRepository.GetByIdAsync(groupId) ?? throw new Exception("Group not found");
-
-        var fileExtension = Path.GetExtension(file.FileName);
-        var validFileExtension = ImageFileTypes.StringToValidImageExtension(fileExtension);
-
-        var ftpClient = new AsyncFtpClient("ftp", DockerEnv.FtpGroupsImagesUser, DockerEnv.FtpGroupsImagesPassword);
-        await ftpClient.AutoConnect();
-
-        if (group.ImageExtension != null)
-        {
-            var fileNameWithExtensionToDelete =
-                $"{groupIdString}{ImageFileTypes.ValidImageExtensionToString(group.ImageExtension)}";
-            await ftpClient.DeleteFile(fileNameWithExtensionToDelete);
-            await groupRepository.ChangeGroupImageExtensionAsync(groupId, null);
-        }
-
-        var stream = file.OpenReadStream();
-        var fileNameWithExtension =
-            $"{groupIdString}{ImageFileTypes.ValidImageExtensionToString(validFileExtension)}";
-        var status = await ftpClient.UploadStream(stream, fileNameWithExtension);
-
-        await ftpClient.Disconnect();
+        var status = await UploadImage.PostImage(UploadImage.UploadType.Group, token, file, distributedCache,
+            null, groupRepository, null);
 
         switch (status)
         {
             case FtpStatus.Failed:
                 return BadRequest("Failed to upload file");
             case FtpStatus.Success:
-                await groupRepository.ChangeGroupImageExtensionAsync(groupId,
-                    ImageFileTypes.StringToValidImageExtension(fileExtension));
                 return Ok("File uploaded successfully");
             default:
                 return BadRequest("Unknown error");
