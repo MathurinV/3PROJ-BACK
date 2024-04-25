@@ -43,8 +43,8 @@ services:
     networks:
       - default
       - local
-#    ports:
-#      - "${API_PORT}:8080"
+    ports:
+      - "${API_PORT}:8080"
     depends_on:
       - db
       - cache
