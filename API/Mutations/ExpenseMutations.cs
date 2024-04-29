@@ -13,7 +13,7 @@ namespace API.Mutations;
 public class ExpenseMutations
 {
     [Authorize]
-    public async Task<ICollection<UserExpense?>> AddUserExpense(
+    public async Task<ICollection<UserExpense>> AddUserExpense(
         ExpenseInsertInput expenseInsertInput,
         [FromServices] IUserGroupRepository userGroupRepository,
         [FromServices] IUserRepository userRepository,
@@ -77,10 +77,7 @@ public class ExpenseMutations
         // Removes the expense creator from the list if he is included in the expensePrevisualizationInput
         var isCreatorInUserIdsWithAmounts = userIdsWithAmounts.FirstOrDefault(x => x.Key == creatorId);
         // /!\
-        if (isCreatorInUserIdsWithAmounts.Key != default)
-        {
-            userIdsWithAmounts.Remove(isCreatorInUserIdsWithAmounts);
-        }
+        if (isCreatorInUserIdsWithAmounts.Key != default) userIdsWithAmounts.Remove(isCreatorInUserIdsWithAmounts);
 
         var expenseInsertDto = expenseInsertInput.ToExpenseInsertDto(creatorId);
 

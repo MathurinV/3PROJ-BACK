@@ -1,4 +1,5 @@
 using DAL.Models.Groups;
+using DAL.Models.PaymentDetails;
 using DAL.Models.Users;
 using HotChocolate;
 
@@ -41,4 +42,6 @@ public class UserGroup
     ///     Gets or sets the date and time when a user joined the user group.
     /// </summary>
     public DateTime JoinedAt { get; set; }
+
+    public PayDueTo PayTo { get; set; }
 }

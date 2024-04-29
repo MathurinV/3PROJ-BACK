@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace DAL.Models.Expenses;
 
 public class ExpensePrevisualizationInput

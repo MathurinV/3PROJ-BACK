@@ -15,7 +15,7 @@ public interface IUserExpenseRepository
     ///     A task that represents the asynchronous operation. The task result contains the collection of inserted
     ///     UserExpense objects.
     /// </returns>
-    Task<ICollection<UserExpense?>> InsertManyAsync(ICollection<UserExpenseInsertDto> userExpenseInsertDto);
+    Task<ICollection<UserExpense>> InsertManyAsync(ICollection<UserExpenseInsertDto> userExpenseInsertDto);
 
     /// <summary>
     ///     Tries to pay all the expenses of a user.

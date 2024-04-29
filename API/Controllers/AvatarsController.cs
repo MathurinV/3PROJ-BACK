@@ -4,7 +4,6 @@ using DAL.Repositories;
 using FluentFTP;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
-using Path = System.IO.Path;
 
 namespace API.Controllers;
 
@@ -18,11 +17,11 @@ public class AvatarsController : ControllerBase
         [FromForm] IFormFile file,
         [FromServices] IDistributedCache distributedCache,
         [FromServices] IUserRepository userRepository
-        )
+    )
     {
         var status = await UploadImage.PostImage(UploadImage.UploadType.Avatar, token, file, distributedCache,
             userRepository, null, null);
-        
+
         switch (status)
         {
             case FtpStatus.Failed:

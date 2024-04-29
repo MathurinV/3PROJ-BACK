@@ -67,9 +67,10 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     networks:
       - local
-    #  dev only:
-#    ports:
-#      - "${DB_PORT}:5432"
+      - default
+    #      dev only:
+    ports:
+      - "${DB_PORT}:5432"
     healthcheck:
       test: [ "CMD", "pg_isready", "-U", "${POSTGRES_USER}" ]
       interval: 30s
@@ -82,8 +83,8 @@ services:
     container_name: "cache"
     networks:
       - local
-#    ports:
-#      - "${CACHE_PORT}:6379"
+    #    ports:
+    #      - "${CACHE_PORT}:6379"
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 30s
@@ -94,9 +95,9 @@ services:
   ftp:
     image: delfer/alpine-ftp-server
     container_name: "ftp"
-#    ports:
-#      - "21:21"
-#      - "21000-21010:21000-21010"
+    #    ports:
+    #      - "21:21"
+    #      - "21000-21010:21000-21010"
     environment:
       USERS: ${FTP_JUSTIFICATIONS_USER}|${FTP_JUSTIFICATIONS_PASS}|/home/vsftpd/justifications|| ${FTP_AVATARS_USER}|${FTP_AVATARS_PASS}|/home/vsftpd/avatars|| ${FTP_GROUPS_USER}|${FTP_GROUPS_PASS}|/home/vsftpd/groups_images
       ADDRESS: ${PASV_ADDRESS}

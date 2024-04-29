@@ -295,7 +295,7 @@ public class UnitTest1
 
         var userAmountsList = new List<KeyValuePair<Guid, decimal?>>();
         foreach (var userId in usersIds) userAmountsList.Add(new KeyValuePair<Guid, decimal?>(userId, null));
-        
+
         var randomAmount = new Faker().Finance.Amount();
 
         var fakeExpense = new ExpensePrevisualizationInput

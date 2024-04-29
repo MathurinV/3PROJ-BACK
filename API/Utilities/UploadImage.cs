@@ -9,6 +9,13 @@ namespace API.Utilities;
 
 public static class UploadImage
 {
+    public enum UploadType
+    {
+        Avatar,
+        Group,
+        Justification
+    }
+
     public static async Task<FtpStatus> PostImage(
         UploadType uploadType,
         string token,
@@ -23,10 +30,10 @@ public static class UploadImage
                              throw new Exception("Token not found");
         var entityId = Guid.Parse(entityIdString);
 
-        string fileExtension = Path.GetExtension(file.FileName);
-        string fileNameWithExtension = "";
-        string ftpUser = "";
-        string ftpPassword = "";
+        var fileExtension = Path.GetExtension(file.FileName);
+        var fileNameWithExtension = "";
+        var ftpUser = "";
+        var ftpPassword = "";
         string? fileNameWithExtensionToDelete = null;
 
         var shouldDeletePreviousFile = false;
@@ -114,7 +121,6 @@ public static class UploadImage
         await ftpClient.Disconnect();
 
         if (status == FtpStatus.Success)
-        {
             switch (uploadType)
             {
                 case UploadType.Avatar:
@@ -142,15 +148,7 @@ public static class UploadImage
                     break;
                 }
             }
-        }
 
         return status;
-    }
-
-    public enum UploadType
-    {
-        Avatar,
-        Group,
-        Justification
     }
 }

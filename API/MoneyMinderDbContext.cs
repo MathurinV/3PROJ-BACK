@@ -2,6 +2,7 @@ using DAL.Models.Expenses;
 using DAL.Models.Groups;
 using DAL.Models.Invitations;
 using DAL.Models.Messages;
+using DAL.Models.PaymentDetails;
 using DAL.Models.UserExpenses;
 using DAL.Models.UserGroups;
 using DAL.Models.Users;
@@ -175,5 +176,19 @@ public sealed class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, G
             .WithMany(u => u.Invitations)
             .HasForeignKey(i => i.UserId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<PayDueTo>()
+            .HasKey(pd => new { pd.UserId, pd.GroupId });
+
+        builder.Entity<AppUser>()
+            .HasMany(u => u.PaymentsToBeReceived)
+            .WithOne(pd => pd.PayToUser)
+            .HasForeignKey(pd => pd.PayToUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<PayDueTo>()
+            .HasOne(pd => pd.UserGroup)
+            .WithOne(ug => ug.PayTo)
+            .HasForeignKey<PayDueTo>(pd => new { pd.UserId, pd.GroupId });
     }
 }

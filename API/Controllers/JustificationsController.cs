@@ -4,7 +4,6 @@ using DAL.Repositories;
 using FluentFTP;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
-using Path = System.IO.Path;
 
 namespace API.Controllers;
 
