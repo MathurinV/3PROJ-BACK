@@ -17,6 +17,19 @@ public class UserQueries
         return userRepository.GetAll();
     }
 
+
+    [Authorize]
+    [UseProjection]
+    [UseFiltering]
+    [UseSorting]
+    public IQueryable<AppUser> GetFriends([Service] IUserRepository userRepository,
+        [FromServices] IHttpContextAccessor httpContextAccessor)
+    {
+        var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
+                     throw new Exception("User not found");
+        return userRepository.GetFriends(Guid.Parse(userId));
+    }
+
     [Authorize]
     [UseFirstOrDefault]
     [UseProjection]

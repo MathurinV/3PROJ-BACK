@@ -93,4 +93,11 @@ public class UserRepository(
         await context.SaveChangesAsync();
         return true;
     }
+
+    public IQueryable<AppUser> GetFriends(Guid userId)
+    {
+        var friends = context.Users.Where(au => au.SentMessages.Any(sm => sm.SenderId == userId) ||
+                                                au.ReceivedMessages.Any(rm => rm.ReceiverId == userId));
+        return friends;
+    }
 }

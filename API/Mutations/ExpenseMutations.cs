@@ -80,7 +80,6 @@ public class ExpenseMutations
         if (isCreatorInUserIdsWithAmounts.Key != default)
         {
             userIdsWithAmounts.Remove(isCreatorInUserIdsWithAmounts);
-            newTotalAmount += isCreatorInUserIdsWithAmounts.Value;
         }
 
         var expenseInsertDto = expenseInsertInput.ToExpenseInsertDto(creatorId);
