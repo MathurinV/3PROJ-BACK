@@ -17,8 +17,6 @@ public class Expense
     [GraphQLIgnore] public Guid CreatedById { get; set; }
     public AppUser CreatedBy { get; set; } = null!;
     public ICollection<UserExpense> UserExpenses { get; set; } = new List<UserExpense>();
-
-    [GraphQLIgnore]
     public JustificationFileTypes.ValidJustificationExtensions? JustificationExtension { get; set; } = null;
 }
 
