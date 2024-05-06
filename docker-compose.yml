@@ -57,7 +57,7 @@ services:
     restart: always
 
   db:
-    image: postgres:alpine
+    image: docker.io/library/postgres:alpine
     container_name: "db"
     volumes:
       - dbdata:/var/lib/postgresql/data
@@ -79,7 +79,7 @@ services:
     restart: always
 
   cache:
-    image: redis:alpine
+    image: docker.io/library/redis:alpine
     container_name: "cache"
     networks:
       - local
@@ -93,7 +93,7 @@ services:
     restart: always
 
   ftp:
-    image: delfer/alpine-ftp-server
+    image: docker.io/delfer/alpine-ftp-server
     container_name: "ftp"
     #    ports:
     #      - "21:21"
