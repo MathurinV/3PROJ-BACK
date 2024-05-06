@@ -1,5 +1,4 @@
 using DAL.Models.Groups;
-using DAL.Models.PaymentDetails;
 using DAL.Repositories;
 using Microsoft.AspNetCore.Mvc;
 

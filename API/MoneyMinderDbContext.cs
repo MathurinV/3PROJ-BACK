@@ -44,7 +44,7 @@ public sealed class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, G
     public DbSet<Invitation> Invitations { get; set; } = null!;
 
     public DbSet<PayDueTo> PayDueTos { get; set; } = null!;
-    
+
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder builder)

@@ -29,6 +29,23 @@ public class UserMutations
         return createdUser;
     }
 
+    public async Task<AppUser?> ModifyMyself([FromServices] IUserRepository userRepository,
+        [FromServices] UserManager<AppUser> userManager,
+        [FromServices] IHttpContextAccessor httpContextAccessor,
+        AppUserModifyDto appUserModifyDto)
+    {
+        var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userId == null) throw new Exception("User not found");
+        AppUserModifyDtoHandling.ValidateAppUserModifyDto(userManager, appUserModifyDto);
+        if (appUserModifyDto.Password != null)
+            await userRepository.ChangeMyPasswordAsync(Guid.Parse(userId), appUserModifyDto);
+
+        if (appUserModifyDto.UserName != null || appUserModifyDto.Email != null)
+            return await userRepository.ModifyAsync(Guid.Parse(userId), appUserModifyDto);
+
+        return userRepository.GetById(Guid.Parse(userId)).FirstOrDefault();
+    }
+
     public async Task<SignInResult> SignIn([FromServices] IUserRepository userRepository,
         [FromServices] UserManager<AppUser> userManager,
         AppUserLoginDto appUserLoginDto)

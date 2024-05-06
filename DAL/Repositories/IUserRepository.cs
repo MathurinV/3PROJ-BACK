@@ -79,6 +79,10 @@ public interface IUserRepository
     /// <returns>Returns an IQueryable of AppUser that matches the provided email.</returns>
     IQueryable<AppUser?> GetByEmail(string email = null!);
 
+    Task<AppUser?> ModifyAsync(Guid userId, AppUserModifyDto appUserModifyDto);
+
+    Task<AppUser?> ChangeMyPasswordAsync(Guid userId, AppUserModifyDto appUserModifyDto);
+
     Task<AppUser?> GetByIdAsync(Guid userId);
 
     Task<bool> ChangeAvatarExtensionAsync(Guid userId,

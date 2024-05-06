@@ -2,6 +2,7 @@ using DAL;
 using DAL.Models.Users;
 using DAL.Repositories;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories;
 
@@ -73,6 +74,34 @@ public class UserRepository(
     public IQueryable<AppUser?> GetById(Guid id)
     {
         return context.Users.Where(u => u.Id == id);
+    }
+
+    public async Task<AppUser?> ModifyAsync(Guid userId, AppUserModifyDto appUserModifyDto)
+    {
+        var user = await context.Users.FindAsync(userId);
+        if (user == null) throw new Exception("User not found");
+
+        if (appUserModifyDto.Email != null) user.Email = appUserModifyDto.Email;
+        if (appUserModifyDto.UserName != null) user.UserName = appUserModifyDto.UserName;
+        await context.SaveChangesAsync();
+        return user;
+    }
+
+    public async Task<AppUser?> ChangeMyPasswordAsync(Guid userId, AppUserModifyDto appUserModifyDto)
+    {
+        var user = await context.Users.FindAsync(userId);
+        if (user == null) throw new Exception("User not found");
+        if (appUserModifyDto.Password != null)
+        {
+            var token = await userManager.GeneratePasswordResetTokenAsync(user);
+            context.Entry(user).State = EntityState.Detached;
+            user = await context.Users.FindAsync(userId);
+            if (user == null) throw new Exception("User not found");
+            var result = await userManager.ResetPasswordAsync(user, token, appUserModifyDto.Password);
+            if (!result.Succeeded) throw new Exception("Error changing password");
+        }
+
+        return user;
     }
 
     public IQueryable<AppUser?> GetByEmail(string email = null!)

@@ -65,6 +65,8 @@ public static class Program
             optionsBuilder.UseNpgsql(DockerEnv.ConnectionString
                 , o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
             );
+            // TODO: ONLY FOR DEBUGGING
+            optionsBuilder.EnableSensitiveDataLogging();
             return new MoneyMinderDbContext(optionsBuilder.Options);
         });
 
