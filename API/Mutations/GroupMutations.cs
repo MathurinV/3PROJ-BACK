@@ -75,4 +75,16 @@ public class GroupMutations
 
         return $"{baseUrl}/groupimages/{token}";
     }
+    
+    [Authorize]
+    public async Task<Group?> ModifyGroup([FromServices] IGroupRepository groupRepository,
+        [FromServices] IHttpContextAccessor httpContextAccessor,
+        GroupModifyDto groupModifyDto)
+    {
+        var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userId == null) return null;
+        var group = await groupRepository.GetByIdAsync(groupModifyDto.GroupId);
+        if (group == null) throw new Exception("Group not found");
+        return await groupRepository.ModifyAsync(Guid.Parse(userId), groupModifyDto);
+    }
 }

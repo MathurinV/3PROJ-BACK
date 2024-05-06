@@ -29,6 +29,7 @@ public class UserMutations
         return createdUser;
     }
 
+    [Authorize]
     public async Task<AppUser?> ModifyMyself([FromServices] IUserRepository userRepository,
         [FromServices] UserManager<AppUser> userManager,
         [FromServices] IHttpContextAccessor httpContextAccessor,
