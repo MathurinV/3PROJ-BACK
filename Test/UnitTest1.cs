@@ -40,6 +40,7 @@ public class UnitTest1
                     amount: " + expensePrevisualizationInput.Amount + @",
                     description: """ + fakeDescription + @""",
                     groupId: """ + expensePrevisualizationInput.GroupId + $@""",
+                    expenseType: OTHER,
                     userAmountsList: {userAmountsListString}
                 }}
             ) {{

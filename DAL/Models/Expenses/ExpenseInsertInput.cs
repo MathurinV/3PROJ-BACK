@@ -8,6 +8,7 @@ public class ExpenseInsertInput
     public Guid GroupId { get; set; }
     public decimal Amount { get; set; }
     [StringLength(255)] public string Description { get; set; } = null!;
+    public ExpenseType ExpenseType { get; set; }
 
     public ExpenseInsertDto ToExpenseInsertDto(Guid createdById)
     {
@@ -15,7 +16,8 @@ public class ExpenseInsertInput
         {
             GroupId = GroupId,
             Description = Description,
-            CreatedById = createdById
+            CreatedById = createdById,
+            ExpenseType = ExpenseType,
         };
     }
 }

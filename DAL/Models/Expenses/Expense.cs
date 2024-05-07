@@ -18,6 +18,15 @@ public class Expense
     public AppUser CreatedBy { get; set; } = null!;
     public ICollection<UserExpense> UserExpenses { get; set; } = new List<UserExpense>();
     public JustificationFileTypes.ValidJustificationExtensions? JustificationExtension { get; set; } = null;
+    public ExpenseType ExpenseType { get; set; }
+}
+
+public enum ExpenseType
+{
+    Food,
+    Rent,
+    Transport,
+    Other
 }
 
 public class JustificationFileTypes
