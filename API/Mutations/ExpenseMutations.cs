@@ -20,7 +20,8 @@ public class ExpenseMutations
         [FromServices] IGroupRepository groupRepository,
         [FromServices] IUserExpenseRepository userExpenseRepository,
         [FromServices] IExpenseRepository expenseRepository,
-        [FromServices] IHttpContextAccessor httpContextAccessor
+        [FromServices] IHttpContextAccessor httpContextAccessor,
+        [FromServices] IPayDueToRepository payDueToRepository
     )
     {
         var creatorStringId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
@@ -63,6 +64,7 @@ public class ExpenseMutations
             }
 
         var newTotalAmount = decimal.Zero;
+
         // At this point, the list of users has been explored, and we know the amount left to be paid by the users without a specified amount
         if (numberOfUsersWithoutSpecifiedAmount > 0)
         {
@@ -70,14 +72,10 @@ public class ExpenseMutations
             foreach (var id in userIdsWithoutSpecifiedAmount)
             {
                 userIdsWithAmounts.Add(new KeyValuePair<Guid, decimal>(id, toBePaidByUserAmount));
-                newTotalAmount += toBePaidByUserAmount;
             }
         }
 
-        // Removes the expense creator from the list if he is included in the expensePrevisualizationInput
-        var isCreatorInUserIdsWithAmounts = userIdsWithAmounts.FirstOrDefault(x => x.Key == creatorId);
-        // /!\
-        if (isCreatorInUserIdsWithAmounts.Key != default) userIdsWithAmounts.Remove(isCreatorInUserIdsWithAmounts);
+        newTotalAmount = userIdsWithAmounts.Sum(x => x.Value);
 
         var expenseInsertDto = expenseInsertInput.ToExpenseInsertDto(creatorId);
 
@@ -98,7 +96,9 @@ public class ExpenseMutations
                 Amount = amount
             });
 
-        return await userExpenseRepository.InsertManyAsync(userExpenses);
+        var res = await userExpenseRepository.InsertManyAsync(userExpenses);
+        await payDueToRepository.RefreshPayDueTosAsync(expenseInsertInput.GroupId);
+        return res;
     }
 
     [Authorize]

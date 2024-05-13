@@ -1,14 +1,15 @@
 using DAL.Models.UserGroups;
 using DAL.Models.Users;
+using HotChocolate;
 
 namespace DAL.Models.PaymentDetails;
 
 public class PayDueTo
 {
-    public Guid UserId { get; set; }
-    public Guid GroupId { get; set; }
-    public decimal? AmountToPay { get; set; }
-    public Guid PayToUserId { get; set; }
-    public AppUser PayToUser { get; set; } = null!;
+    [GraphQLIgnore] public Guid UserId { get; set; }
+    [GraphQLIgnore] public Guid GroupId { get; set; }
+    public decimal? AmountToPay { get; set; } = null;
+    [GraphQLIgnore] public Guid? PayToUserId { get; set; } = null;
+    public AppUser? PayToUser { get; set; } = null!;
     public UserGroup UserGroup { get; set; } = null!;
 }

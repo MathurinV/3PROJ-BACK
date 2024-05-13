@@ -129,6 +129,7 @@ public static class Program
             .AddScoped<IExpenseRepository, ExpenseRepository>()
             .AddScoped<IUserExpenseRepository, UserExpenseRepository>()
             .AddScoped<IInvitationRepository, InvitationRepository>()
+            .AddScoped<IPayDueToRepository, PayDueToRepository>()
             ;
 
 // Health checks

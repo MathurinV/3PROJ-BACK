@@ -43,5 +43,5 @@ public class UserGroup
     /// </summary>
     public DateTime JoinedAt { get; set; }
 
-    public PayDueTo PayTo { get; set; }
+    public PayDueTo PayTo { get; set; } = null!;
 }

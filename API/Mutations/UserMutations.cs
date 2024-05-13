@@ -92,6 +92,7 @@ public class UserMutations
     public async Task<UserGroup?> JoinGroup([FromServices] IUserGroupRepository userGroupRepository,
         [FromServices] IInvitationRepository invitationRepository,
         [FromServices] IHttpContextAccessor httpContextAccessor,
+        [FromServices] IPayDueToRepository payDueToRepository,
         UserGroupInsertInput userGroupInsertInput)
     {
         var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -101,7 +102,9 @@ public class UserMutations
             throw new Exception("Invitation not found");
         if (await userGroupRepository.IsUserInGroup(userGroupInsertDto.UserId, userGroupInsertDto.GroupId))
             throw new Exception("User is already in the group");
-        return await userGroupRepository.InsertAsync(userGroupInsertDto);
+        var tmp = await userGroupRepository.InsertAsync(userGroupInsertDto);
+        await payDueToRepository.InitPayDueToAsync(userGroupInsertDto.GroupId, userGroupInsertDto.UserId);
+        return tmp;
     }
 
     [Authorize]

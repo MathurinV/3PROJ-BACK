@@ -4,6 +4,6 @@ namespace DAL.Repositories;
 
 public interface IPayDueToRepository
 {
-    public Task<ICollection<PayDueTo>> RefreshAllPayDuesAsync(
-        List<ICollection<KeyValuePair<Guid, decimal>>> addUserExpenseResults);
+    Task<ICollection<PayDueTo>> RefreshPayDueTosAsync(Guid groupId);
+    Task InitPayDueToAsync(Guid groupId, Guid userId);
 }
