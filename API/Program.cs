@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using QuestPDF.Infrastructure;
 using StackExchange.Redis;
 
 namespace API;
@@ -46,6 +47,9 @@ public static class Program
                     .AllowCredentials()
             );
         });
+        
+        // QuestPDF License configuration
+        QuestPDF.Settings.License = LicenseType.Community;
 
         services.AddHttpContextAccessor();
 
