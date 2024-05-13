@@ -50,6 +50,7 @@ public class UnitTest1
         }}";
 
         var addUserExpenseMutationObject = new { query = addUserExpenseMutation };
+        _testOutputHelper.WriteLine(addUserExpenseMutation);
         var serializedAddUserExpenseMutation = JsonConvert.SerializeObject(addUserExpenseMutationObject);
         var addUserExpenseContent =
             new StringContent(serializedAddUserExpenseMutation, Encoding.UTF8, "application/json");

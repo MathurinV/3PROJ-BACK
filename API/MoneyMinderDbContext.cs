@@ -192,5 +192,10 @@ public sealed class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, G
             .HasOne(pd => pd.UserGroup)
             .WithOne(ug => ug.PayTo)
             .HasForeignKey<PayDueTo>(pd => new { pd.UserId, pd.GroupId });
+
+        builder.Entity<UserGroup>()
+            .HasOne(ug => ug.PayTo)
+            .WithOne(pd => pd.UserGroup)
+            .HasForeignKey<PayDueTo>(pd => new { pd.UserId, pd.GroupId });
     }
 }

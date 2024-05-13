@@ -17,6 +17,7 @@ public class GroupMutations
     public async Task<Group?> CreateGroup([FromServices] IGroupRepository groupRepository,
         [FromServices] IUserGroupRepository userGroupRepository,
         [FromServices] IHttpContextAccessor httpContextAccessor,
+        [FromServices] IPayDueToRepository payDueToRepository,
         GroupInsertInput groupInsertInput)
     {
         var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -29,6 +30,7 @@ public class GroupMutations
             GroupId = currentGroup.Id
         };
         await userGroupRepository.InsertAsync(userGroup);
+        await payDueToRepository.InitPayDueToAsync(currentGroup.Id, currentGroup.OwnerId);
         return groupRepository.GetByIdAsync(currentGroup.Id).Result;
     }
 
