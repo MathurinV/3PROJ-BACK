@@ -13,7 +13,8 @@ public static class UploadImage
     {
         Avatar,
         Group,
-        Justification
+        Justification,
+        Rib
     }
 
     public static async Task<FtpStatus> PostImage(
@@ -60,6 +61,28 @@ public static class UploadImage
                     shouldDeletePreviousFile = true;
                 }
 
+                break;
+            }
+            case UploadType.Rib:
+            {
+                if (userRepository == null)
+                    throw new Exception("Can't upload rib without user repository");
+                var user = await userRepository.GetByIdAsync(entityId) ??
+                           throw new Exception("User not found");
+                var validFileExtension =
+                    JustificationFileTypes.StringToValidJustificationExtension(fileExtension);
+                fileNameWithExtension =
+                    $"{entityIdString}{JustificationFileTypes.ValidJustificationExtensionToString(validFileExtension)}";
+                ftpUser = DockerEnv.FtpUserRibsUser;
+                ftpPassword = DockerEnv.FtpUserRibsPassword;
+                if (user.RibExtension != null)
+                {
+                    fileNameWithExtensionToDelete =
+                        $"{entityIdString}{JustificationFileTypes.ValidJustificationExtensionToString(user.RibExtension)}";
+                    await userRepository.ChangeRibExtensionAsync(entityId, null);
+                    shouldDeletePreviousFile = true;
+                }
+                
                 break;
             }
             case UploadType.Group:
@@ -129,6 +152,14 @@ public static class UploadImage
                         throw new Exception("Can't upload avatar without user repository");
                     await userRepository.ChangeAvatarExtensionAsync(entityId,
                         ImageFileTypes.StringToValidImageExtension(fileExtension));
+                    break;
+                }
+                case UploadType.Rib:
+                {
+                    if (userRepository == null)
+                        throw new Exception("Can't upload rib without user repository");
+                    await userRepository.ChangeRibExtensionAsync(entityId,
+                        JustificationFileTypes.StringToValidJustificationExtension(fileExtension));
                     break;
                 }
                 case UploadType.Group:

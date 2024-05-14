@@ -43,6 +43,12 @@ public static class DockerEnv
     public static string FtpAvatarsPassword { get; } = Environment.GetEnvironmentVariable("FTP_AVATARS_PASS") ??
                                                        throw new Exception("FTP_AVATARS_PASS is not set");
 
+    public static string FtpUserRibsUser { get; } = Environment.GetEnvironmentVariable("FTP_USER_RIBS_USER") ??
+                                                    throw new Exception("FTP_USER_RIBS_USER is not set");
+
+    public static string FtpUserRibsPassword { get; } = Environment.GetEnvironmentVariable("FTP_USER_RIBS_PASS") ??
+                                                        throw new Exception("FTP_USER_RIBS_PASS is not set");
+
     public static string FtpGroupsImagesUser { get; } = Environment.GetEnvironmentVariable("FTP_GROUPS_USER") ??
                                                         throw new Exception("FTP_GROUPS_USER is not set");
 

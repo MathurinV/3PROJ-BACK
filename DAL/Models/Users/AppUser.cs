@@ -71,4 +71,5 @@ public class AppUser : IdentityUser<Guid>
         : null;
 
     [GraphQLIgnore] public ImageFileTypes.ValidImageExtensions? AvatarExtension { get; set; }
+    [GraphQLIgnore] public JustificationFileTypes.ValidJustificationExtensions? RibExtension { get; set; }
 }

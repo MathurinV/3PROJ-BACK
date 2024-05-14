@@ -1,3 +1,4 @@
+using DAL.Models.Expenses;
 using DAL.Models.Users;
 using Microsoft.AspNetCore.Identity;
 
@@ -88,5 +89,6 @@ public interface IUserRepository
     Task<bool> ChangeAvatarExtensionAsync(Guid userId,
         ImageFileTypes.ValidImageExtensions? newExtension);
 
+    Task ChangeRibExtensionAsync(Guid entityId, JustificationFileTypes.ValidJustificationExtensions? newExtension);
     IQueryable<AppUser> GetFriends(Guid userId);
 }

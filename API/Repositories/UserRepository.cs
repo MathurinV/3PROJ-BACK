@@ -1,4 +1,5 @@
 using DAL;
+using DAL.Models.Expenses;
 using DAL.Models.Users;
 using DAL.Repositories;
 using Microsoft.AspNetCore.Identity;
@@ -121,6 +122,14 @@ public class UserRepository(
         user.AvatarExtension = newExtension;
         await context.SaveChangesAsync();
         return true;
+    }
+
+    public async Task ChangeRibExtensionAsync(Guid entityId, JustificationFileTypes.ValidJustificationExtensions? newExtension)
+    {
+        var user = await context.Users.FindAsync(entityId);
+        if (user == null) throw new Exception("User not found");
+        user.RibExtension = newExtension;
+        await context.SaveChangesAsync();
     }
 
     public IQueryable<AppUser> GetFriends(Guid userId)

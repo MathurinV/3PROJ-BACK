@@ -33,6 +33,9 @@ services:
       # AVATARS
       FTP_AVATARS_USER: ${FTP_AVATARS_USER}
       FTP_AVATARS_PASS: ${FTP_AVATARS_PASS}
+      # RIBS
+      FTP_USER_RIBS_USER: ${FTP_USER_RIBS_USER}
+      FTP_USER_RIBS_PASS: ${FTP_USER_RIBS_PASS}
       # GROUPS_IMAGES
       FTP_GROUPS_USER: ${FTP_GROUPS_USER}
       FTP_GROUPS_PASS: ${FTP_GROUPS_PASS}
@@ -99,7 +102,11 @@ services:
     #      - "21:21"
     #      - "21000-21010:21000-21010"
     environment:
-      USERS: ${FTP_JUSTIFICATIONS_USER}|${FTP_JUSTIFICATIONS_PASS}|/home/vsftpd/justifications|| ${FTP_AVATARS_USER}|${FTP_AVATARS_PASS}|/home/vsftpd/avatars|| ${FTP_GROUPS_USER}|${FTP_GROUPS_PASS}|/home/vsftpd/groups_images
+      USERS: "
+      ${FTP_JUSTIFICATIONS_USER}|${FTP_JUSTIFICATIONS_PASS}|/home/vsftpd/justifications||
+      ${FTP_AVATARS_USER}|${FTP_AVATARS_PASS}|/home/vsftpd/avatars||
+      ${FTP_GROUPS_USER}|${FTP_GROUPS_PASS}|/home/vsftpd/groups_images||
+      ${FTP_USER_RIBS_USER}|FTP_USER_RIBS_PASS|/home/vsftpd/ribs"
       ADDRESS: ${PASV_ADDRESS}
     volumes:
       - ./ftp_data:/home/vsftpd
