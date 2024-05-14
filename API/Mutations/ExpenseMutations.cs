@@ -32,6 +32,19 @@ public class ExpenseMutations
         var group = await groupRepository.GetByIdAsync(expenseInsertInput.GroupId) ??
                     throw new Exception("Group not found");
 
+        expenseInsertInput.Description = expenseInsertInput.Description.Trim();
+        if (expenseInsertInput.Description.Length == 0)
+            throw new Exception("Description can't be empty");
+        
+        if (expenseInsertInput.Amount <= 0)
+            throw new Exception("Amount must be strictly greater than 0");
+        
+        if (expenseInsertInput.UserAmountsList.Count == 0)
+            throw new Exception("UserAmountsList can't be empty");
+        
+        if (expenseInsertInput.UserAmountsList.Count == 1 && expenseInsertInput.UserAmountsList.First().Key == creatorId)
+            throw new Exception("You can't create an expense with only yourself");
+        
         var userAmountsList = expenseInsertInput.UserAmountsList;
 
         // Checks if all the weighted users are in the group
