@@ -17,7 +17,7 @@ public class ExpenseInsertInput
             GroupId = GroupId,
             Description = Description,
             CreatedById = createdById,
-            ExpenseType = ExpenseType,
+            ExpenseType = ExpenseType
         };
     }
 }

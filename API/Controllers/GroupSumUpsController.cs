@@ -38,7 +38,7 @@ public class GroupSumUpsController : ControllerBase
                 Amount = expense.Amount,
                 Description = expense.Description,
                 Date = expense.CreatedAt,
-                Type = expense.ExpenseType,
+                Type = expense.ExpenseType
             };
             groupSumUpExpenses.Add(groupSumUpExpense);
         }
@@ -49,9 +49,10 @@ public class GroupSumUpsController : ControllerBase
             Expenses = groupSumUpExpenses,
             Payers = new List<GroupSumUpUser>()
         };
-        
-        
-        var usergroups = queryableGroup.SelectMany(group => group!.UserGroups).Include(group => group.PayTo).Include(ug => ug.User).ToList();
+
+
+        var usergroups = queryableGroup.SelectMany(group => group!.UserGroups).Include(group => group.PayTo)
+            .Include(ug => ug.User).ToList();
         foreach (var userGroup in usergroups)
         {
             var user = userGroup.User;

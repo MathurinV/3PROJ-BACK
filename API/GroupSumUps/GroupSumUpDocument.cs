@@ -6,15 +6,22 @@ namespace API.GroupSumUps;
 
 public class GroupSumUpDocument : IDocument
 {
-    public GroupSumUpModel Model { get; }
-
     public GroupSumUpDocument(GroupSumUpModel model)
     {
         Model = model;
     }
 
-    public DocumentMetadata GetMetadata() => DocumentMetadata.Default;
-    public DocumentSettings GetSettings() => DocumentSettings.Default;
+    public GroupSumUpModel Model { get; }
+
+    public DocumentMetadata GetMetadata()
+    {
+        return DocumentMetadata.Default;
+    }
+
+    public DocumentSettings GetSettings()
+    {
+        return DocumentSettings.Default;
+    }
 
     public void Compose(IDocumentContainer container)
     {

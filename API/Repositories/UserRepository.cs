@@ -124,7 +124,8 @@ public class UserRepository(
         return true;
     }
 
-    public async Task ChangeRibExtensionAsync(Guid entityId, JustificationFileTypes.ValidJustificationExtensions? newExtension)
+    public async Task ChangeRibExtensionAsync(Guid entityId,
+        JustificationFileTypes.ValidJustificationExtensions? newExtension)
     {
         var user = await context.Users.FindAsync(entityId);
         if (user == null) throw new Exception("User not found");

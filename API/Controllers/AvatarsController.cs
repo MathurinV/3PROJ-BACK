@@ -56,6 +56,4 @@ public class AvatarsController : ControllerBase
         var fileExtensionString = ImageFileTypes.ValidImageExtensionToString(fileExtension);
         return File(stream, ImageFileTypes.ValidImageExtensionsMimeType(fileExtension));
     }
-    
-    
 }

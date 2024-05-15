@@ -82,7 +82,7 @@ public static class UploadImage
                     await userRepository.ChangeRibExtensionAsync(entityId, null);
                     shouldDeletePreviousFile = true;
                 }
-                
+
                 break;
             }
             case UploadType.Group:

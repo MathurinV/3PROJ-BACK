@@ -41,6 +41,7 @@ public class GroupRepository(MoneyMinderDbContext context) : IGroupRepository
             if (isNewOwnerInGroup == false) throw new Exception("New owner is not in the group");
             group.OwnerId = groupModifyDto.OwnerId.Value;
         }
+
         await context.SaveChangesAsync();
         return group;
     }

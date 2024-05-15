@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using QuestPDF;
 using QuestPDF.Infrastructure;
 using StackExchange.Redis;
 
@@ -47,9 +48,9 @@ public static class Program
                     .AllowCredentials()
             );
         });
-        
+
         // QuestPDF License configuration
-        QuestPDF.Settings.License = LicenseType.Community;
+        Settings.License = LicenseType.Community;
 
         services.AddHttpContextAccessor();
 
@@ -134,6 +135,7 @@ public static class Program
             .AddScoped<IUserExpenseRepository, UserExpenseRepository>()
             .AddScoped<IInvitationRepository, InvitationRepository>()
             .AddScoped<IPayDueToRepository, PayDueToRepository>()
+            .AddScoped<IPayPalRepository, PayPalRepository>()
             ;
 
 // Health checks

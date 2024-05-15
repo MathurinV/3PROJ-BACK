@@ -35,16 +35,17 @@ public class ExpenseMutations
         expenseInsertInput.Description = expenseInsertInput.Description.Trim();
         if (expenseInsertInput.Description.Length == 0)
             throw new Exception("Description can't be empty");
-        
-        if (expenseInsertInput.Amount <= 0)
+
+        if (expenseInsertInput.Amount <= decimal.Zero)
             throw new Exception("Amount must be strictly greater than 0");
-        
+
         if (expenseInsertInput.UserAmountsList.Count == 0)
             throw new Exception("UserAmountsList can't be empty");
-        
-        if (expenseInsertInput.UserAmountsList.Count == 1 && expenseInsertInput.UserAmountsList.First().Key == creatorId)
+
+        if (expenseInsertInput.UserAmountsList.Count == 1 &&
+            expenseInsertInput.UserAmountsList.First().Key == creatorId)
             throw new Exception("You can't create an expense with only yourself");
-        
+
         var userAmountsList = expenseInsertInput.UserAmountsList;
 
         // Checks if all the weighted users are in the group
@@ -83,9 +84,7 @@ public class ExpenseMutations
         {
             var toBePaidByUserAmount = Math.Round(totalAmount / numberOfUsersWithoutSpecifiedAmount, 2);
             foreach (var id in userIdsWithoutSpecifiedAmount)
-            {
                 userIdsWithAmounts.Add(new KeyValuePair<Guid, decimal>(id, toBePaidByUserAmount));
-            }
         }
 
         newTotalAmount = userIdsWithAmounts.Sum(x => x.Value);
@@ -184,5 +183,11 @@ public class ExpenseMutations
 
         var baseUrl = $"http://localhost:{DockerEnv.ApiPort}";
         return $"{baseUrl}/justifications/{token}";
+    }
+
+    public string TestPaypal([FromServices] IPayPalRepository payPalRepository)
+    {
+        var paymentTest = payPalRepository.Test();
+        return paymentTest.ConvertToJson();
     }
 }

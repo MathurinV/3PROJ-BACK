@@ -93,14 +93,14 @@ public class GroupMutations
         var group = await groupRepository.GetByIdAsync(groupId) ?? throw new Exception("Group not found");
         var user = await userRepository.GetByIdAsync(userId) ?? throw new Exception("User not found");
         if (!await userGroupRepository.IsUserInGroup(userId, groupId)) throw new Exception("You are not in this group");
-        
+
         var token = Guid.NewGuid().ToString();
         await distributedCache.SetStringAsync(token, groupId.ToString(), new DistributedCacheEntryOptions
         {
             AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
         });
         var baseUrl = $"http://localhost:{DockerEnv.ApiPort}";
-        
+
         return $"{baseUrl}/groupsumups/{token}";
     }
 

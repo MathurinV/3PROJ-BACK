@@ -1,5 +1,4 @@
 using DAL.Models.Expenses;
-using DAL.Models.Groups;
 
 namespace API.GroupSumUps;
 

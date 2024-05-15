@@ -8,27 +8,22 @@ public class PayDueToRepository(MoneyMinderDbContext context) : IPayDueToReposit
 {
     public async Task<ICollection<PayDueTo>> RefreshPayDueTosAsync(Guid groupId)
     {
-        Dictionary<Guid, decimal> userBalances = new Dictionary<Guid, decimal>();
+        var userBalances = new Dictionary<Guid, decimal>();
         var groupUserExpense = await context.UserExpenses.Include(userExpense => userExpense.Expense)
-            .Where(userExpense => (userExpense.Expense.GroupId == groupId && userExpense.PaidAt == null))
+            .Where(userExpense => userExpense.Expense.GroupId == groupId && userExpense.PaidAt == null)
             .ToListAsync();
         foreach (var currentUserExpense in groupUserExpense)
         {
             var currentUserBalance =
                 userBalances.FirstOrDefault(userBalance => userBalance.Key == currentUserExpense.UserId);
             if (currentUserBalance.Equals(default(KeyValuePair<Guid, decimal>)))
-            {
                 userBalances.Add(currentUserExpense.UserId, 0);
-            }
 
             userBalances[currentUserExpense.UserId] -= currentUserExpense.Amount;
         }
 
         var expenses = await context.Expenses.Where(expense => expense.GroupId == groupId).ToListAsync();
-        foreach (var currentExpense in expenses)
-        {
-            userBalances[currentExpense.CreatedById] += currentExpense.Amount;
-        }
+        foreach (var currentExpense in expenses) userBalances[currentExpense.CreatedById] += currentExpense.Amount;
 
         var userBalancesList = userBalances.OrderByDescending(pair => pair.Value).ToList();
 
@@ -51,8 +46,7 @@ public class PayDueToRepository(MoneyMinderDbContext context) : IPayDueToReposit
         }
 
         var positiveBalancesListCount = positiveBalancesList.Count;
-        for (int i = 0; i < positiveBalancesListCount - 1; i++)
-        {
+        for (var i = 0; i < positiveBalancesListCount - 1; i++)
             if (positiveBalancesList[i].Value < 0)
             {
                 payDueTos.Add(new PayDueTo
@@ -62,7 +56,7 @@ public class PayDueToRepository(MoneyMinderDbContext context) : IPayDueToReposit
                     GroupId = groupId,
                     PayToUserId = positiveBalancesList[i + 1].Key
                 });
-                
+
                 positiveBalancesList[i + 1] = new KeyValuePair<Guid, decimal>(positiveBalancesList[i + 1].Key,
                     positiveBalancesList[i + 1].Value + positiveBalancesList[i].Value);
             }
@@ -74,10 +68,9 @@ public class PayDueToRepository(MoneyMinderDbContext context) : IPayDueToReposit
                     AmountToPay = 0,
                     GroupId = groupId,
                     PayToUserId = null
-                });                
+                });
             }
-        }
-        
+
         payDueTos.Add(new PayDueTo
         {
             UserId = positiveBalancesList[positiveBalancesListCount - 1].Key,
