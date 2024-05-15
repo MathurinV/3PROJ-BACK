@@ -8,4 +8,4 @@ ftp_data
 ./3PROJ-BACK.sln.DotSettings.user
 
 # Environment
-.env
+./.env
