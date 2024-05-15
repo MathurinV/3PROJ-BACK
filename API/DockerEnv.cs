@@ -25,10 +25,10 @@ public static class DockerEnv
 
     public static string PaypalClientId { get; } = Environment.GetEnvironmentVariable("PAYPAL_CLIENT_ID") ??
                                                    throw new Exception("PAYPAL_CLIENT_ID is not set");
-    
+
     public static string PaypalClientSecret { get; } = Environment.GetEnvironmentVariable("PAYPAL_CLIENT_SECRET") ??
                                                        throw new Exception("PAYPAL_CLIENT_SECRET is not set");
-    
+
     public static string ClientUrl { get; } = Environment.GetEnvironmentVariable("CLIENT_URL") ??
                                               throw new Exception("CLIENT_URL is not set");
 

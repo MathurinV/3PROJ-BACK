@@ -23,4 +23,18 @@ public class GroupQueries
     {
         return groupRepository.GetById(id);
     }
+
+    // [Authorize]
+    // [UseProjection]
+    // [UseFiltering]
+    // [UseSorting]
+    // public ICollection<KeyValuePair<AppUser, decimal>> GetGroupBalances(
+    //     [FromServices] IHttpContextAccessor httpContextAccessor,
+    //     [FromServices] IGroupRepository groupRepository,
+    //     [FromServices] IUserRepository userRepository,
+    //     Guid groupId)
+    // {
+    //     
+    //     return groupRepository.GetGroupBalances(groupId);
+    // }
 }

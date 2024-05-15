@@ -11,6 +11,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.1"/>
         <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="8.0.1"/>
+        <PackageReference Include="PayPal.SDK.NETCore" Version="1.9.1.2" />
     </ItemGroup>
 
     <ItemGroup>
@@ -19,9 +20,6 @@
         </Reference>
         <Reference Include="Microsoft.EntityFrameworkCore">
             <HintPath>..\..\..\.nuget\packages\microsoft.entityframeworkcore\8.0.1\lib\net8.0\Microsoft.EntityFrameworkCore.dll</HintPath>
-        </Reference>
-        <Reference Include="PayPal">
-            <HintPath>..\..\..\..\.nuget\packages\paypal.sdk.netcore\1.9.1.2\lib\netstandard2.0\PayPal.dll</HintPath>
         </Reference>
     </ItemGroup>
 
