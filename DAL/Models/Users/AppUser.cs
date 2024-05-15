@@ -72,4 +72,9 @@ public class AppUser : IdentityUser<Guid>
 
     [GraphQLIgnore] public ImageFileTypes.ValidImageExtensions? AvatarExtension { get; set; }
     [GraphQLIgnore] public JustificationFileTypes.ValidJustificationExtensions? RibExtension { get; set; }
+    
+    [NotMapped]
+    public string? RibUrl => RibExtension != null
+        ? $"http://localhost:3000/ribs/{Id}{JustificationFileTypes.ValidJustificationExtensionToString(RibExtension)}"
+        : null;
 }

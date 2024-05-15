@@ -20,5 +20,6 @@ public class AppUserType : ObjectType<AppUser>
         descriptor.Field(u => u.AccessFailedCount).Ignore();
         descriptor.Field(f => f.Id).IsProjected();
         descriptor.Field(u => u.AvatarExtension).IsProjected();
+        descriptor.Field(u => u.RibExtension).IsProjected();
     }
 }
