@@ -138,4 +138,14 @@ public class UserRepository(
                                                 au.ReceivedMessages.Any(rm => rm.ReceiverId == userId));
         return friends;
     }
+
+    public async Task<bool> IsDueToAsync(Guid currentUserId, Guid otherUserId)
+    {
+        var user = await context.Users.FindAsync(currentUserId);
+        if (user == null) throw new Exception("User not found");
+        var otherUser = await context.Users.FindAsync(otherUserId);
+        if (otherUser == null) throw new Exception("User not found");
+        var currentUserGroups = context.UserGroups.Where(ug => ug.UserId == currentUserId);
+        return currentUserGroups.Any(ug => ug.PayTo.PayToUserId == otherUserId);
+    }
 }

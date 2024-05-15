@@ -1,8 +1,10 @@
 using System.Security.Claims;
 using API.ErrorsHandling.UsersHandling;
+using DAL.Models.Expenses;
 using DAL.Models.UserGroups;
 using DAL.Models.Users;
 using DAL.Repositories;
+using FluentFTP;
 using HotChocolate.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -180,14 +182,51 @@ public class UserMutations
         var userIdString = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (userIdString == null) throw new Exception("User not found");
         var userId = Guid.Parse(userIdString);
-        
+
         var token = Guid.NewGuid().ToString();
         await distributedCache.SetStringAsync(token, userIdString, new DistributedCacheEntryOptions
         {
             AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
         });
         var baseUrl = $"http://localhost:{DockerEnv.ApiPort}";
-        
+
+        return $"{baseUrl}/ribs/{token}";
+    }
+
+    [Authorize]
+    public async Task<string> GetUserRib(Guid ribUserId,
+        [FromServices] IHttpContextAccessor httpContextAccessor,
+        [FromServices] IUserRepository userRepository,
+        [FromServices] IDistributedCache distributedCache
+    )
+    {
+        var userIdString = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
+                           throw new Exception("User not found");
+        var userId = Guid.Parse(userIdString);
+
+        var currentUser = await userRepository.GetByIdAsync(userId) ??
+                          throw new Exception("User not found");
+        var otherUser = await userRepository.GetByIdAsync(ribUserId) ??
+                        throw new Exception("Other user not found");
+
+        var isCurrentUserDueToOtherUser = await userRepository.IsDueToAsync(currentUser.Id, otherUser.Id);
+        if (!isCurrentUserDueToOtherUser && userId != ribUserId)
+            throw new Exception("No money has to be paid to this user");
+
+        var fileExtension = JustificationFileTypes.ValidJustificationExtensionToString(otherUser.RibExtension);
+
+        var ftpClient = new AsyncFtpClient("ftp", DockerEnv.FtpUserRibsUser, DockerEnv.FtpUserRibsPassword);
+        await ftpClient.AutoConnect();
+        if (!await ftpClient.FileExists($"{ribUserId}{fileExtension}")) throw new Exception("Rib not found");
+        await ftpClient.Disconnect();
+
+        var token = Guid.NewGuid().ToString();
+        await distributedCache.SetStringAsync(token, ribUserId.ToString(), new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+        });
+
+        var baseUrl = $"http://localhost:{DockerEnv.ApiPort}";
         return $"{baseUrl}/ribs/{token}";
     }
 

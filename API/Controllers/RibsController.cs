@@ -9,14 +9,14 @@ namespace API.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class RibsController: ControllerBase
+public class RibsController : ControllerBase
 {
     [HttpPost("{token}")]
     public async Task<ActionResult<FtpStatus>> PostRibs(string token,
         [FromForm] IFormFile file,
         [FromServices] IDistributedCache distributedCache,
         [FromServices] IUserRepository userRepository
-        )
+    )
     {
         var status = await UploadImage.PostImage(UploadImage.UploadType.Rib, token, file, distributedCache,
             userRepository, null, null);
@@ -32,27 +32,32 @@ public class RibsController: ControllerBase
         }
     }
 
-    [HttpGet("{fileName}")]
-    public async Task<IActionResult> GetRib(string fileName,
-        [FromServices] IUserRepository userRepository)
+    [HttpGet("{token}")]
+    public async Task<IActionResult> GetRib(string token,
+        [FromServices] IUserRepository userRepository,
+        [FromServices] IDistributedCache distributedCache)
     {
-        var userIdString = fileName.Split('.')[0];
-        var user = await userRepository.GetByIdAsync(Guid.Parse(userIdString));
-        if (user == null) return NotFound($"User with ID {userIdString} not found");
+        var userIdString = await distributedCache.GetStringAsync(token);
+        if (userIdString == null) return BadRequest("Invalid token");
+
+        var userId = Guid.Parse(userIdString);
+
+        var user = await userRepository.GetByIdAsync(userId);
+        if (user == null) return NotFound($"User with ID {userId} not found");
 
         var ftpClient = new AsyncFtpClient("ftp", DockerEnv.FtpUserRibsUser, DockerEnv.FtpUserRibsPassword);
         await ftpClient.AutoConnect();
-        
-        var fileExtension = user.RibExtension;
-        if (fileExtension == null || !await ftpClient.FileExists(fileName)) return NotFound("Rib not found");
-        
+
+        var extension = user.RibExtension;
+        var extensionString = JustificationFileTypes.ValidJustificationExtensionToString(extension);
+
         var stream = new MemoryStream();
-        var status = await ftpClient.DownloadStream(stream, fileName);
+        var fileNameWithExtension = $"{userIdString}{extensionString}";
+        var status = await ftpClient.DownloadStream(stream, fileNameWithExtension);
         await ftpClient.Disconnect();
         if (!status) return NotFound("Rib not found");
         stream.Position = 0;
-        
-        var fileExtensionString = JustificationFileTypes.ValidJustificationExtensionToString(fileExtension);
-        return File(stream, JustificationFileTypes.ValidJustificationExtensionsMimeType(fileExtension));
+
+        return File(stream, JustificationFileTypes.ValidJustificationExtensionsMimeType(extension));
     }
 }

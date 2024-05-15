@@ -98,14 +98,14 @@ services:
   ftp:
     image: docker.io/delfer/alpine-ftp-server
     container_name: "ftp"
-    ports:
-      - "21:21"
-      - "21000-21100:21000-21100"
+    # ports:
+    #   - "21:21"
+    #   - "21000-21100:21000-21100"
     environment:
       USERS: "${FTP_JUSTIFICATIONS_USER}|${FTP_JUSTIFICATIONS_PASS}|${FTP_JUSTIFICATIONS_PATH} ${FTP_AVATARS_USER}|${FTP_AVATARS_PASS}|${FTP_AVATARS_PATH} ${FTP_USER_RIBS_USER}|${FTP_USER_RIBS_PASS}|${FTP_USER_RIBS_PATH} ${FTP_GROUPS_USER}|${FTP_GROUPS_PASS}|${FTP_GROUPS_PATH}"
       ADDRESS: ${PASV_ADDRESS}
-      MIN_PORT: 21000
-      MAX_PORT: 21100
+      # MIN_PORT: 21000
+      # MAX_PORT: 21100
     volumes:
       - ./ftp_data:/home/vsftpd
     networks:

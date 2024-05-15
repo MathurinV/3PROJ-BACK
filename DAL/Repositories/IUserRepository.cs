@@ -91,4 +91,5 @@ public interface IUserRepository
 
     Task ChangeRibExtensionAsync(Guid entityId, JustificationFileTypes.ValidJustificationExtensions? newExtension);
     IQueryable<AppUser> GetFriends(Guid userId);
+    Task<bool> IsDueToAsync(Guid currentUserId, Guid otherUserId);
 }
