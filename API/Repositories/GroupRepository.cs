@@ -1,5 +1,6 @@
 using DAL;
 using DAL.Models.Groups;
+using DAL.Models.Users;
 using DAL.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -54,6 +55,30 @@ public class GroupRepository(MoneyMinderDbContext context) : IGroupRepository
         group.ImageExtension = newExtension;
         await context.SaveChangesAsync();
         return true;
+    }
+
+    public async Task<ICollection<KeyValuePair<Guid, decimal>>> GetGroupBalances(Guid groupId)
+    {
+        var userBalances = new Dictionary<Guid, decimal>();
+        var groupUserExpense = await context.UserExpenses.Include(userExpense => userExpense.Expense)
+            .Where(userExpense => userExpense.Expense.GroupId == groupId && userExpense.PaidAt == null)
+            .ToListAsync();
+        foreach (var currentUserExpense in groupUserExpense)
+        {
+            var currentUserBalance =
+                userBalances.FirstOrDefault(userBalance => userBalance.Key == currentUserExpense.UserId);
+            if (currentUserBalance.Equals(default(KeyValuePair<Guid, decimal>)))
+                userBalances.Add(currentUserExpense.UserId, 0);
+
+            userBalances[currentUserExpense.UserId] -= currentUserExpense.Amount;
+        }
+
+        var expenses = context.Expenses.Where(expense => expense.GroupId == groupId).ToList();
+        foreach (var currentExpense in expenses) userBalances[currentExpense.CreatedById] += currentExpense.Amount;
+
+        var userBalancesList = userBalances.OrderByDescending(pair => pair.Value).ToList();
+
+        return userBalancesList;
     }
 
     public async Task<Group?> GetByIdAsync(Guid currentGroupId)
