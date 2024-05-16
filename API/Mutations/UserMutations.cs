@@ -124,37 +124,6 @@ public class UserMutations
         return true;
     }
 
-
-    [Authorize]
-    public async Task<bool> PayDues([FromServices] IUserExpenseRepository userExpenseRepository,
-        [FromServices] IUserRepository userRepository,
-        [FromServices] IHttpContextAccessor httpContextAccessor)
-    {
-        var userIdString = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (userIdString == null) throw new Exception("User not found");
-
-        var expenseCreatorsAmountsPairs = await userExpenseRepository.PayDuesByUserIdAsync(Guid.Parse(userIdString));
-        if (expenseCreatorsAmountsPairs.Count == 0) return false;
-        await userRepository.AddToBalancesAsync(expenseCreatorsAmountsPairs);
-        return true;
-    }
-
-    [Authorize]
-    public async Task<bool> PayDuesByExpenseId([FromServices] IUserExpenseRepository userExpenseRepository,
-        [FromServices] IUserRepository userRepository,
-        [FromServices] IHttpContextAccessor httpContextAccessor,
-        ICollection<Guid> expenseIds)
-    {
-        var userIdString = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (userIdString == null) throw new Exception("User not found");
-
-        var expenseCreatorsAmountsPairs =
-            await userExpenseRepository.PayDuesByUserIdAndExpenseIdsAsync(Guid.Parse(userIdString), expenseIds);
-        if (expenseCreatorsAmountsPairs.Count == 0) return false;
-        await userRepository.AddToBalancesAsync(expenseCreatorsAmountsPairs);
-        return true;
-    }
-
     [Authorize]
     public async Task<string> UploadProfilePicture([FromServices] IUserRepository userRepository,
         [FromServices] IHttpContextAccessor httpContextAccessor,
@@ -228,15 +197,5 @@ public class UserMutations
 
         var baseUrl = $"http://localhost:{DockerEnv.ApiPort}";
         return $"{baseUrl}/ribs/{token}";
-    }
-
-    [Authorize]
-    public async Task<bool> AddToBalance([FromServices] IUserRepository userRepository,
-        [FromServices] IHttpContextAccessor httpContextAccessor,
-        decimal amount)
-    {
-        var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (userId == null) throw new Exception("User not found");
-        return await userRepository.AddToBalanceAsync(Guid.Parse(userId), amount);
     }
 }

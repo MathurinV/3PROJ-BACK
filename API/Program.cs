@@ -27,10 +27,10 @@ public static class Program
         // Logging
         services.AddLogging(loggingBuilder =>
         {
-            loggingBuilder.AddFilter("Microsoft", LogLevel.Debug);
-            loggingBuilder.AddFilter("Microsoft.AspNetCore.DataProtection", LogLevel.Warning);
-            loggingBuilder.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
-            loggingBuilder.AddFilter("System", LogLevel.Debug);
+            // loggingBuilder.AddFilter("Microsoft", LogLevel.Debug);
+            // loggingBuilder.AddFilter("Microsoft.AspNetCore.DataProtection", LogLevel.Warning);
+            // loggingBuilder.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
+            // loggingBuilder.AddFilter("System", LogLevel.Debug);
         });
 
         // Cors

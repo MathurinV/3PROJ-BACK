@@ -8,4 +8,5 @@ public interface IPayDueToRepository
     Task InitPayDueToAsync(Guid groupId, Guid userId);
     Task<PayDueTo> GetPayDueToAsync(Guid groupId, Guid payerId);
     Task UpdateAsync(PayDueTo payDueTo);
+    Task ResetPayDueTosAsync(Guid groupId);
 }

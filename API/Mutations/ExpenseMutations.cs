@@ -53,9 +53,6 @@ public class ExpenseMutations
                 userAmountsList.Select(x => x.Key)))
             throw new Exception("Not all the weighted users are in the group");
 
-        // var creatorInUserAmountsList =
-        //     userAmountsList.FirstOrDefault(x => x.Key == creatorId);
-
         var totalAmount = Math.Round(expenseInsertInput.Amount, 2);
         var numberOfUsersWithoutSpecifiedAmount = 0;
         var userIdsWithoutSpecifiedAmount = new List<Guid>();
@@ -101,14 +98,19 @@ public class ExpenseMutations
 
         var userExpenses = new List<UserExpenseInsertDto>();
         foreach (var (guid, amount) in userIdsWithAmounts)
+        {
             userExpenses.Add(new UserExpenseInsertDto
             {
                 ExpenseId = currentExpense.Id,
                 UserId = guid,
                 Amount = amount
             });
+            await userGroupRepository.AddToBalanceAsync(guid, expenseInsertDto.GroupId, -amount);
+        }
 
         var res = await userExpenseRepository.InsertManyAsync(userExpenses);
+        await userGroupRepository.AddToBalanceAsync(currentExpense.CreatedById, currentExpense.GroupId,
+            currentExpense.Amount);
         await payDueToRepository.RefreshPayDueTosAsync(expenseInsertInput.GroupId);
         return res;
     }

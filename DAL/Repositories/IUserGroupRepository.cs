@@ -27,4 +27,8 @@ public interface IUserGroupRepository
     /// <param name="userIds">A collection of user IDs to check.</param>
     /// <returns>True if all users are in the group, false otherwise.</returns>
     Task<bool> AreUsersInGroup(Guid groupId, IEnumerable<Guid> userIds);
+
+    Task AddToBalanceAsync(Guid userId, Guid groupId, decimal amountToAdd);
+    Task ResetBalanceAsync(Guid userId, Guid groupId);
+    Task<ICollection<KeyValuePair<Guid, decimal>>> GetGroupBalances(Guid groupId);
 }

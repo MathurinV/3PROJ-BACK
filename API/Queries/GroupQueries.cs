@@ -44,6 +44,6 @@ public class GroupQueries
         if (!await userGroupRepository.IsUserInGroup(userId, groupId))
             throw new Exception("User is not in the group.");
 
-        return await groupRepository.GetGroupBalances(groupId);
+        return await userGroupRepository.GetGroupBalances(groupId);
     }
 }

@@ -140,21 +140,22 @@ public class GroupMutations
         var payDueTo = await payDueToRepository.GetPayDueToAsync(groupId, payerId);
         var amountToPay = payDueTo.AmountToPay;
         var payeeId = payDueTo.PayToUserId;
-        if (amountToPay == null || payeeId == null) throw new Exception("You don't have to pay anything");
+        if (payeeId == null) throw new Exception("You don't have to pay anything");
         var payee = await userRepository.GetByIdAsync(payeeId.Value) ?? throw new Exception("Payee not found");
 
         // At this point we have the payer, the payee, the amount to pay and the group, hence we can proceed with the payment
-        var payment = payPalRepository.CreatePaymentBetweenUsers(payer, payee, amountToPay.Value);
+        var payment = payPalRepository.CreatePaymentBetweenUsers(payer, payee, amountToPay);
         if (payment == null) throw new Exception("Payment failed");
-        
+
         var approvalUrl = payment.links.FirstOrDefault(l => l.rel == "approval_url")?.href;
-        
+
         if (string.IsNullOrEmpty(approvalUrl)) throw new Exception("Approval URL not found");
 
         // At this point the payment was successful, hence we can proceed with the update of the payDueTo
-        payDueTo.AmountToPay = null;
+        payDueTo.AmountToPay = decimal.Zero;
         payDueTo.PayToUserId = null;
         await payDueToRepository.UpdateAsync(payDueTo);
+        await userGroupRepository.ResetBalanceAsync(payerId, groupId);
 
         return approvalUrl;
     }

@@ -44,4 +44,5 @@ public class UserGroup
     public DateTime JoinedAt { get; set; }
 
     public PayDueTo PayTo { get; set; } = null!;
+    [GraphQLIgnore] public decimal Balance { get; set; } = decimal.Zero;
 }

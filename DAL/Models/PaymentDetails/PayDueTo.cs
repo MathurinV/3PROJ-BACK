@@ -8,8 +8,8 @@ public class PayDueTo
 {
     [GraphQLIgnore] public Guid UserId { get; set; }
     [GraphQLIgnore] public Guid GroupId { get; set; }
-    public decimal? AmountToPay { get; set; } = null;
+    public decimal AmountToPay { get; set; } = decimal.Zero;
     [GraphQLIgnore] public Guid? PayToUserId { get; set; } = null;
-    public AppUser? PayToUser { get; set; } = null!;
-    public UserGroup UserGroup { get; set; } = null!;
+    public AppUser? PayToUser { get; set; }
+    public UserGroup UserGroup { get; set; }
 }

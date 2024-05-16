@@ -27,30 +27,6 @@ public interface IUserRepository
     Task<bool> SignOutAsync();
 
     /// <summary>
-    ///     Adds the specified amount to the balance of a user asynchronously.
-    /// </summary>
-    /// <param name="userId">The ID of the user.</param>
-    /// <param name="amount">The amount to be added to the user's balance.</param>
-    /// <returns>
-    ///     A Task that represents the asynchronous operation. The task will be completed with a boolean value indicating
-    ///     whether the operation was successful (true) or not (false).
-    /// </returns>
-    Task<bool> AddToBalanceAsync(Guid userId, decimal amount);
-
-    /// <summary>
-    ///     Adds the specified amounts to the balances of the users asynchronously.
-    /// </summary>
-    /// <param name="userIdAmountPairs">
-    ///     A collection of key-value pairs representing the user IDs and the amounts to be added
-    ///     to their balances.
-    /// </param>
-    /// <returns>
-    ///     A Task that represents the asynchronous operation. The task will be completed with a boolean value indicating
-    ///     whether the operation was successful (true) or not (false).
-    /// </returns>
-    Task<bool> AddToBalancesAsync(ICollection<KeyValuePair<Guid, decimal>> userIdAmountPairs);
-
-    /// <summary>
     ///     Deletes a user record from the database asynchronously.
     /// </summary>
     /// <param name="id">The ID of the user to be deleted.</param>

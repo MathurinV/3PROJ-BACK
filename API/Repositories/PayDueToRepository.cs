@@ -9,21 +9,8 @@ public class PayDueToRepository(MoneyMinderDbContext context) : IPayDueToReposit
     public async Task<ICollection<PayDueTo>> RefreshPayDueTosAsync(Guid groupId)
     {
         var userBalances = new Dictionary<Guid, decimal>();
-        var groupUserExpense = await context.UserExpenses.Include(userExpense => userExpense.Expense)
-            .Where(userExpense => userExpense.Expense.GroupId == groupId && userExpense.PaidAt == null)
-            .ToListAsync();
-        foreach (var currentUserExpense in groupUserExpense)
-        {
-            var currentUserBalance =
-                userBalances.FirstOrDefault(userBalance => userBalance.Key == currentUserExpense.UserId);
-            if (currentUserBalance.Equals(default(KeyValuePair<Guid, decimal>)))
-                userBalances.Add(currentUserExpense.UserId, 0);
-
-            userBalances[currentUserExpense.UserId] -= currentUserExpense.Amount;
-        }
-
-        var expenses = await context.Expenses.Where(expense => expense.GroupId == groupId).ToListAsync();
-        foreach (var currentExpense in expenses) userBalances[currentExpense.CreatedById] += currentExpense.Amount;
+        var groupUsers = await context.UserGroups.Where(userGroup => userGroup.GroupId == groupId).ToListAsync();
+        foreach (var currentUser in groupUsers) userBalances[currentUser.UserId] = currentUser.Balance;
 
         var userBalancesList = userBalances.OrderByDescending(pair => pair.Value).ToList();
 
@@ -79,6 +66,8 @@ public class PayDueToRepository(MoneyMinderDbContext context) : IPayDueToReposit
             PayToUserId = null
         });
 
+        await ResetPayDueTosAsync(groupId);
+
         foreach (var currentPayDueTo in payDueTos)
         {
             var payDueTo = await context.PayDueTos.FirstOrDefaultAsync(payDueTo =>
@@ -122,6 +111,19 @@ public class PayDueToRepository(MoneyMinderDbContext context) : IPayDueToReposit
     public async Task UpdateAsync(PayDueTo payDueTo)
     {
         context.PayDueTos.Update(payDueTo);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task ResetPayDueTosAsync(Guid groupId)
+    {
+        var payDueTos = await context.PayDueTos.Where(payDueTo => payDueTo.GroupId == groupId).ToListAsync();
+        foreach (var payDueTo in payDueTos)
+        {
+            payDueTo.AmountToPay = 0;
+            payDueTo.PayToUserId = null;
+            context.PayDueTos.Update(payDueTo);
+        }
+
         await context.SaveChangesAsync();
     }
 }

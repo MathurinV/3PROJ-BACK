@@ -86,12 +86,12 @@ public class PayPalRepository : IPayPalRepository
             },
             transactions = new List<Transaction>
             {
-                new Transaction
+                new()
                 {
                     amount = new Amount
                     {
                         currency = "EUR",
-                        total = amount.ToString("F2"),
+                        total = amount.ToString("F2")
                     },
                     payee = new Payee
                     {
@@ -106,7 +106,7 @@ public class PayPalRepository : IPayPalRepository
                 cancel_url = "http://example.com/cancel"
             }
         };
-        
+
         var createdPayment = payment.Create(_apiContext);
 
         return createdPayment;

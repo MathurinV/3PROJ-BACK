@@ -1,5 +1,4 @@
 using DAL.Models.Groups;
-using DAL.Models.Users;
 
 namespace DAL.Repositories;
 
@@ -35,5 +34,4 @@ public interface IGroupRepository
     Task<Group?> ModifyAsync(Guid userModifierId, GroupModifyDto groupModifyDto);
 
     public Task<bool> ChangeGroupImageExtensionAsync(Guid groupId, ImageFileTypes.ValidImageExtensions? newExtension);
-    Task<ICollection<KeyValuePair<Guid, decimal>>> GetGroupBalances(Guid groupId);
 }

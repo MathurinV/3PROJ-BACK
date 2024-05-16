@@ -36,28 +36,6 @@ public class UserRepository(
         return true;
     }
 
-    public async Task<bool> AddToBalanceAsync(Guid userId, decimal amount)
-    {
-        var user = await context.Users.FindAsync(userId);
-        if (user == null) throw new Exception("User not found");
-        user.Balance += amount;
-        await context.SaveChangesAsync();
-        return true;
-    }
-
-    public async Task<bool> AddToBalancesAsync(ICollection<KeyValuePair<Guid, decimal>> userIdAmountPairs)
-    {
-        foreach (var (userId, amount) in userIdAmountPairs)
-        {
-            var user = await context.Users.FindAsync(userId);
-            if (user == null) throw new Exception("User not found");
-            user.Balance += amount;
-        }
-
-        await context.SaveChangesAsync();
-        return true;
-    }
-
     public async Task<bool> DeleteAsync(Guid id)
     {
         var user = await context.Users.FindAsync(id);
