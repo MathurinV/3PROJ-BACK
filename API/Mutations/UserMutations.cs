@@ -198,4 +198,26 @@ public class UserMutations
         var baseUrl = $"http://localhost:{DockerEnv.ApiPort}";
         return $"{baseUrl}/ribs/{token}";
     }
+    
+    [Authorize]
+    public async Task<string> GetUserInfo([FromServices] IUserRepository userRepository,
+        [FromServices] IDistributedCache distributedCache,
+        [FromServices] IHttpContextAccessor httpContextAccessor)
+    {
+        var userIdString = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userIdString == null) throw new Exception("User not found");
+        var userId = Guid.Parse(userIdString);
+
+        var user = await userRepository.GetByIdAsync(userId) ??
+                   throw new Exception("User not found");
+
+        var token = Guid.NewGuid().ToString();
+        await distributedCache.SetStringAsync(token, userIdString, new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+        });
+        
+        var baseUrl = $"http://localhost:{DockerEnv.ApiPort}";
+        return $"{baseUrl}/usersumups/{token}";
+    }
 }

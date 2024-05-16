@@ -2,7 +2,7 @@ using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 
-namespace API.GroupSumUps;
+namespace API.SumUps.GroupSumUps;
 
 public class GroupSumUpDocument : IDocument
 {

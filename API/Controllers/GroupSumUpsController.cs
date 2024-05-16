@@ -1,4 +1,4 @@
-using API.GroupSumUps;
+using API.SumUps.GroupSumUps;
 using DAL.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,9 +14,6 @@ public class GroupSumUpsController : ControllerBase
     [HttpGet("{token}")]
     public async Task<IActionResult> GetGroupSumUp(string token,
         [FromServices] IGroupRepository groupRepository,
-        [FromServices] IUserGroupRepository userGroupRepository,
-        [FromServices] IExpenseRepository expenseRepository,
-        [FromServices] IUserRepository userRepository,
         [FromServices] IDistributedCache distributedCache)
     {
         var groupIdString = await distributedCache.GetStringAsync(token);

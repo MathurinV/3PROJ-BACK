@@ -1,6 +1,6 @@
 using DAL.Models.Expenses;
 
-namespace API.GroupSumUps;
+namespace API.SumUps.GroupSumUps;
 
 public class GroupSumUpModel
 {
