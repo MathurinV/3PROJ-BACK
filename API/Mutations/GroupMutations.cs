@@ -115,4 +115,47 @@ public class GroupMutations
         if (group == null) throw new Exception("Group not found");
         return await groupRepository.ModifyAsync(Guid.Parse(userId), groupModifyDto);
     }
+
+    [Authorize]
+    public async Task<string> PayDuesToGroup(Guid groupId,
+        [FromServices] IUserRepository userRepository,
+        [FromServices] IGroupRepository groupRepository,
+        [FromServices] IUserGroupRepository userGroupRepository,
+        [FromServices] IPayPalRepository payPalRepository,
+        [FromServices] IPayDueToRepository payDueToRepository,
+        [FromServices] IHttpContextAccessor httpContextAccessor)
+    {
+        // Basic validations
+        var payerIdString = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
+                            throw new Exception("User not found");
+        var payerId = Guid.Parse(payerIdString);
+
+        var payer = await userRepository.GetByIdAsync(payerId) ?? throw new Exception("User not found");
+        var group = groupRepository.GetById(groupId).First() ?? throw new Exception("Group not found");
+
+        var isPayerInGroup = await userGroupRepository.IsUserInGroup(payerId, groupId);
+        if (!isPayerInGroup) throw new Exception("You are not a member of the specified group");
+
+        // At this point the payer is in the group and the group exists, hence we can proceed with the retrieval of the amount to be paid
+        var payDueTo = await payDueToRepository.GetPayDueToAsync(groupId, payerId);
+        var amountToPay = payDueTo.AmountToPay;
+        var payeeId = payDueTo.PayToUserId;
+        if (amountToPay == null || payeeId == null) throw new Exception("You don't have to pay anything");
+        var payee = await userRepository.GetByIdAsync(payeeId.Value) ?? throw new Exception("Payee not found");
+
+        // At this point we have the payer, the payee, the amount to pay and the group, hence we can proceed with the payment
+        var payment = payPalRepository.CreatePaymentBetweenUsers(payer, payee, amountToPay.Value);
+        if (payment == null) throw new Exception("Payment failed");
+        
+        var approvalUrl = payment.links.FirstOrDefault(l => l.rel == "approval_url")?.href;
+        
+        if (string.IsNullOrEmpty(approvalUrl)) throw new Exception("Approval URL not found");
+
+        // At this point the payment was successful, hence we can proceed with the update of the payDueTo
+        payDueTo.AmountToPay = null;
+        payDueTo.PayToUserId = null;
+        await payDueToRepository.UpdateAsync(payDueTo);
+
+        return approvalUrl;
+    }
 }

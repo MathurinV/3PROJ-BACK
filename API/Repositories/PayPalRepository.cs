@@ -1,3 +1,4 @@
+using DAL.Models.Users;
 using DAL.Repositories;
 using PayPal.Api;
 
@@ -68,5 +69,46 @@ public class PayPalRepository : IPayPalRepository
             }
         });
         return payment;
+    }
+
+    public Payment CreatePaymentBetweenUsers(AppUser payer, AppUser payee, decimal amount)
+    {
+        var payerEmail = payer.Email ?? throw new Exception("Payer email is null");
+        var payeeEmail = payee.Email ?? throw new Exception("Payee email is null");
+
+        var payment = new Payment
+        {
+            intent = "sale",
+            payer = new Payer
+            {
+                payment_method = "paypal",
+                payer_info = new PayerInfo { email = payerEmail }
+            },
+            transactions = new List<Transaction>
+            {
+                new Transaction
+                {
+                    amount = new Amount
+                    {
+                        currency = "EUR",
+                        total = amount.ToString("F2"),
+                    },
+                    payee = new Payee
+                    {
+                        email = payeeEmail
+                    },
+                    description = $"Moneyminder payment from {payer.UserName} to {payee.UserName}"
+                }
+            },
+            redirect_urls = new RedirectUrls
+            {
+                return_url = "http://example.com/return",
+                cancel_url = "http://example.com/cancel"
+            }
+        };
+        
+        var createdPayment = payment.Create(_apiContext);
+
+        return createdPayment;
     }
 }

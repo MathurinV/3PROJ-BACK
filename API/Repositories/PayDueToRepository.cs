@@ -110,4 +110,18 @@ public class PayDueToRepository(MoneyMinderDbContext context) : IPayDueToReposit
         await context.PayDueTos.AddAsync(payDueTo);
         await context.SaveChangesAsync();
     }
+
+    public async Task<PayDueTo> GetPayDueToAsync(Guid groupId, Guid payerId)
+    {
+        var payDueTo = await context.PayDueTos.FirstOrDefaultAsync(payDueTo =>
+            payDueTo.GroupId == groupId && payDueTo.UserId == payerId);
+        if (payDueTo == null) throw new Exception("PayDueTo not found");
+        return payDueTo;
+    }
+
+    public async Task UpdateAsync(PayDueTo payDueTo)
+    {
+        context.PayDueTos.Update(payDueTo);
+        await context.SaveChangesAsync();
+    }
 }
