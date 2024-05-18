@@ -167,4 +167,41 @@ public class GroupMutations
 
         return approvalUrl;
     }
+
+    [Authorize]
+    public async Task<decimal> ManuallyValidatePayment(
+        Guid payerId,
+        Guid groupId,
+        [FromServices] IUserRepository userRepository,
+        [FromServices] IGroupRepository groupRepository,
+        [FromServices] IUserGroupRepository userGroupRepository,
+        [FromServices] IPayDueToRepository payDueToRepository,
+        [FromServices] IUserExpenseRepository userExpenseRepository,
+        [FromServices] IHttpContextAccessor httpContextAccessor
+    )
+    {
+        var currentUserStringId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
+                                  throw new Exception("User not found");
+        var currentUserId = Guid.Parse(currentUserStringId);
+        var currentUser = userRepository.GetByIdAsync(currentUserId);
+        
+        var payer = await userRepository.GetByIdAsync(payerId) ?? throw new Exception("Payer not found");
+        var group = await groupRepository.GetByIdAsync(groupId) ?? throw new Exception("Group not found");
+        var areUsersInGroup = await userGroupRepository.AreUsersInGroup(groupId, new List<Guid> {payerId, currentUserId});
+        if (!areUsersInGroup) throw new Exception("Payer or logged in user are not in the group");
+        
+        var payDueTo = await payDueToRepository.GetPayDueToAsync(groupId, payerId);
+        if (payDueTo.AmountToPay == 0) throw new Exception("Payer doesn't have to pay anything");
+        if (payDueTo.PayToUserId == null) throw new Exception("Payer doesn't have to pay anyone");
+
+        decimal amountPaid = payDueTo.AmountToPay;
+        await userGroupRepository.ResetBalanceAsync(payerId, groupId);
+        await userGroupRepository.AddToBalanceAsync(currentUserId, groupId, -amountPaid);
+
+        payDueTo.AmountToPay = 0;
+        payDueTo.PayToUserId = null;
+        await payDueToRepository.UpdateAsync(payDueTo);
+        await userExpenseRepository.SetPaidAtAsync(groupId, payerId);
+        return amountPaid;
+    }
 }
