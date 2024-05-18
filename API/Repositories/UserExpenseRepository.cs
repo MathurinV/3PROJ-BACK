@@ -20,4 +20,19 @@ public class UserExpenseRepository(MoneyMinderDbContext context) : IUserExpenseR
         if (expense == null) throw new Exception("Expense not found");
         return expense.UserExpenses.Where(x => x.ExpenseId == expense.Id).ToList();
     }
+
+    public async Task SetPaidAtAsync(Guid groupId, Guid userId)
+    {
+        var dateTime = DateTime.UtcNow;
+        var userExpenses = await context.UserExpenses
+            .Include(x => x.Expense)
+            .Where(x => x.Expense.GroupId == groupId && x.UserId == userId)
+            .ToListAsync();
+        foreach (var userExpense in userExpenses)
+        {
+            userExpense.PaidAt = dateTime;
+        }
+
+        await context.SaveChangesAsync();
+    }
 }

@@ -121,6 +121,7 @@ public class GroupMutations
         [FromServices] IUserRepository userRepository,
         [FromServices] IGroupRepository groupRepository,
         [FromServices] IUserGroupRepository userGroupRepository,
+        [FromServices] IUserExpenseRepository userExpenseRepository,
         [FromServices] IPayPalRepository payPalRepository,
         [FromServices] IPayDueToRepository payDueToRepository,
         [FromServices] IHttpContextAccessor httpContextAccessor)
@@ -152,6 +153,13 @@ public class GroupMutations
         if (string.IsNullOrEmpty(approvalUrl)) throw new Exception("Approval URL not found");
 
         // At this point the payment was successful, hence we can proceed with the update of the payDueTo
+        if (payDueTo.PayToUserId != null)
+        {
+            await userGroupRepository.AddToBalanceAsync(payDueTo.PayToUserId.Value, groupId, -payDueTo.AmountToPay);
+        }
+
+        await userExpenseRepository.SetPaidAtAsync(groupId, payerId);
+
         payDueTo.AmountToPay = decimal.Zero;
         payDueTo.PayToUserId = null;
         await payDueToRepository.UpdateAsync(payDueTo);
