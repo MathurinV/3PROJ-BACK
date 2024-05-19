@@ -113,8 +113,10 @@ public class UserRepository(
 
     public IQueryable<AppUser> GetFriends(Guid userId)
     {
-        var friends = context.Users.Where(au => au.SentMessages.Any(sm => sm.SenderId == userId) ||
-                                                au.ReceivedMessages.Any(rm => rm.ReceiverId == userId));
+        var sentMessages = context.Messages.Where(m => m.SenderId == userId);
+        var receivedMessages = context.Messages.Where(m => m.ReceiverId == userId);
+        var friends = sentMessages.Select(m => m.Receiver).Union(receivedMessages.Select(m => m.Sender))
+            .Where(f => f.Id != userId).Distinct();
         return friends;
     }
 
