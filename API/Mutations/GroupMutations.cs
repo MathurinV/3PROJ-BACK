@@ -156,6 +156,7 @@ public class GroupMutations
         if (payDueTo.PayToUserId != null)
         {
             await userGroupRepository.AddToBalanceAsync(payDueTo.PayToUserId.Value, groupId, -payDueTo.AmountToPay);
+            await userGroupRepository.AddToBalanceAsync(payerId, groupId, payDueTo.AmountToPay);
         }
 
         await userExpenseRepository.SetPaidAtAsync(groupId, payerId);
@@ -163,7 +164,6 @@ public class GroupMutations
         payDueTo.AmountToPay = decimal.Zero;
         payDueTo.PayToUserId = null;
         await payDueToRepository.UpdateAsync(payDueTo);
-        await userGroupRepository.ResetBalanceAsync(payerId, groupId);
 
         return approvalUrl;
     }
@@ -195,8 +195,8 @@ public class GroupMutations
         if (payDueTo.PayToUserId == null) throw new Exception("Payer doesn't have to pay anyone");
 
         var amountPaid = payDueTo.AmountToPay;
-        await userGroupRepository.ResetBalanceAsync(payerId, groupId);
         await userGroupRepository.AddToBalanceAsync(currentUserId, groupId, -amountPaid);
+        await userGroupRepository.AddToBalanceAsync(payerId, groupId, amountPaid);
 
         payDueTo.AmountToPay = 0;
         payDueTo.PayToUserId = null;
