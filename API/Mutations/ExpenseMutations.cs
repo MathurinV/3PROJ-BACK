@@ -115,14 +115,6 @@ public class ExpenseMutations
         return res;
     }
 
-    // public async Task<bool> ForcePayDuesRefresh(
-    //     Guid groupId,
-    //     [FromServices] IPayDueToRepository payDueToRepository)
-    // {
-    //     await payDueToRepository.RefreshPayDueTosAsync(groupId);
-    //     return true;
-    // }
-
     [Authorize]
     public async Task<string> UploadExpenseJustification(Guid expenseId,
         [FromServices] IExpenseRepository expenseRepository,

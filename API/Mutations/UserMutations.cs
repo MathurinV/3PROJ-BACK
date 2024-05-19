@@ -86,7 +86,6 @@ public class UserMutations
         var userId = httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (userId == null) throw new Exception("User not found");
         var result = await userRepository.DeleteAsync(Guid.Parse(userId));
-        if (result) await userRepository.SignOutAsync();
         return result;
     }
 

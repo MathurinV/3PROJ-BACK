@@ -96,17 +96,20 @@ public sealed class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, G
         builder.Entity<UserGroup>()
             .HasOne(ug => ug.User)
             .WithMany(u => u.UserGroups)
-            .HasForeignKey(ug => ug.UserId);
+            .HasForeignKey(ug => ug.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<UserGroup>()
             .HasOne(ug => ug.Group)
             .WithMany(g => g.UserGroups)
-            .HasForeignKey(ug => ug.GroupId);
+            .HasForeignKey(ug => ug.GroupId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<Group>()
             .HasOne(g => g.Owner)
             .WithMany(u => u.OwnedGroups)
-            .HasForeignKey(g => g.OwnerId);
+            .HasForeignKey(g => g.OwnerId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<Message>()
             .Property(m => m.SentAt)
@@ -120,49 +123,49 @@ public sealed class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, G
             .HasOne(m => m.Sender)
             .WithMany(u => u.SentMessages)
             .HasForeignKey(m => m.SenderId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<Message>()
             .HasOne(m => m.Receiver)
             .WithMany(u => u.ReceivedMessages)
             .HasForeignKey(m => m.ReceiverId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<GroupMessage>()
             .HasOne(gm => gm.Sender)
             .WithMany(u => u.SentGroupMessages)
             .HasForeignKey(gm => gm.SenderId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<GroupMessage>()
             .HasOne(gm => gm.Group)
             .WithMany(g => g.ReceivedGroupMessages)
             .HasForeignKey(gm => gm.GroupId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<Expense>()
             .HasOne(e => e.Group)
             .WithMany(g => g.Expenses)
             .HasForeignKey(e => e.GroupId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<Expense>()
             .HasOne(e => e.CreatedBy)
             .WithMany(u => u.CreatedExpenses)
             .HasForeignKey(e => e.CreatedById)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<UserExpense>()
             .HasOne(ue => ue.User)
             .WithMany(u => u.UserExpenses)
             .HasForeignKey(ue => ue.UserId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<UserExpense>()
             .HasOne(ue => ue.Expense)
             .WithMany(e => e.UserExpenses)
             .HasForeignKey(ue => ue.ExpenseId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<Invitation>()
             .HasKey(i => new { i.UserId, i.GroupId });
@@ -171,13 +174,13 @@ public sealed class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, G
             .HasOne(i => i.Group)
             .WithMany(g => g.Invitations)
             .HasForeignKey(i => i.GroupId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<Invitation>()
             .HasOne(i => i.User)
             .WithMany(u => u.Invitations)
             .HasForeignKey(i => i.UserId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<PayDueTo>()
             .HasKey(pd => new { pd.UserId, pd.GroupId });
@@ -186,16 +189,18 @@ public sealed class MoneyMinderDbContext : IdentityDbContext<AppUser, AppRole, G
             .HasMany(u => u.PaymentsToBeReceived)
             .WithOne(pd => pd.PayToUser)
             .HasForeignKey(pd => pd.PayToUserId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<PayDueTo>()
             .HasOne(pd => pd.UserGroup)
             .WithOne(ug => ug.PayTo)
-            .HasForeignKey<PayDueTo>(pd => new { pd.UserId, pd.GroupId });
+            .HasForeignKey<PayDueTo>(pd => new { pd.UserId, pd.GroupId })
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<UserGroup>()
             .HasOne(ug => ug.PayTo)
             .WithOne(pd => pd.UserGroup)
-            .HasForeignKey<PayDueTo>(pd => new { pd.UserId, pd.GroupId });
+            .HasForeignKey<PayDueTo>(pd => new { pd.UserId, pd.GroupId })
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
